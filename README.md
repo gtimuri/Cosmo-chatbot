@@ -1,6 +1,20 @@
-# ChatBot usage
+# ChatBot Usage
+
 Study project: a simple chatbot with a web interface that works with a local knowledge base.  
 The project was implemented within the framework of university assignments.
+
+<table align="center" style="border: none;">
+  <tr>
+    <td align="center" style="border: none;">
+      <img src="https://github.com/user-attachments/assets/1d63b0e8-1fcf-42f8-8d96-78747f5bbb64" alt="ChatBot Interface" width="400">
+      <br>
+      <br>
+      <em>Interactive Chat Interface: Q&A with local knowledge base</em>
+    </td>
+  </tr>
+</table>
+
+---
 
 #### 1. Create pip environment
 
@@ -65,9 +79,3 @@ python api.py
 ```
 
 Service will be available on `http://localhost:8080` by default
-
-## Screenshots
-
-| Bot Asking | Bot Answering |
-|:---:|:---:|
-| <img src="frontend/img/asking.png" width="400"> | <img src="frontend/img/answering.png" width="400"> |
