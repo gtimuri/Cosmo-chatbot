@@ -1,0 +1,26 @@
+Project name: Strong materials for soft robotic hands
+
+What problem does this innovation aim to solve?
+Metal robot grippers can damage delicate objects when handling them. Soft grippers can adapt 
+well to the shape of an object and handle it gently. However, they are not capable of holding 
+heavy loads.
+
+What changes does this innovation bring? 
+The new robotic hands are made from a combination of soft and rigid materials. For example, 
+they use joints made of silicone and fiber-reinforced plastic. These can deform in a controlled 
+way while exerting greater gripping or hol ding force – allowing even heavy objects to be handled 
+safely.
+
+Who will benefit from this innovation? 
+All people living in a digitalized society.
+
+What is the technology behind it and how does it work? 
+The soft plastics are embedded together with rigid structures into a textile base material. This 
+creates a gripper that is both flexible and strong at the same time.
+
+Challenges 
+• The new soft robot hands are to be manufactured industrially. 
+• New rules are needed to ensure that these robot hands can be used safely in the future.
+ 
+When will this innovation be available?
+Approximately 2030 to 2035

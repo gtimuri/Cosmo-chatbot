@@ -1,0 +1,17 @@
+Project name: The 6th generation of mobile networks – "6G"
+
+What is “6G”? 
+"6G" stands for the sixth generation of mobile communications. It is the suc cessor to 5G and is 
+expected to launch around 2030. 6G aims to deliver faster data transmission speeds and lower 
+latency – even when billions of devices are connected and exchanging data at the same time. 
+Despite the high volume of data, it is also designed to consume as little energy as possible.
+
+What problem does 6G solve?
+6G is intended to overcome the limitations of 5G, such as data delays and limited network 
+capacity. It aims to be more reliable and significantly more energy-efficient than 5G. This will 
+enable new applications that require ultra fast and uninterrupted data transmission – such as 
+self-driving cars and tele medicine that must operate without delay.
+
+What you can discover here:
+ Learn what 6G is used for, what visions researchers have for it, and what challenges still lie 
+ahead. Test your knowledge in the quiz and share your feedback on 6G with us.

@@ -1,0 +1,36 @@
+Project name: Soft magnetic robots
+
+What problem does this innovation aim to solve?
+ Example 1: Alzheimer’s disease 
+In the treatment of Alzheimer’s, fine electrodes are sometimes inserted into the brain to 
+stimulate certain areas. How ever, the procedure is complex and often stressful for patients. 
+Example 2: Artificial fertilization
+ In artificial fertilization, specialists must select individual sperm cells. This requires a lot of 
+skill, as the rigid tools used can easily damage the fragile cells. 
+
+What changes does this innovation bring? 
+The soft magnetic robots are just a few millimetres in size, soft and flexible. They need no 
+electricity or batteries. This allows them to be used inside the body without damaging tissue.
+ Example 1: Alzheimer’s disease 
+The robot could be inserted into the brain through a very small opening. It stimulates the brain 
+externally using a helmet – no wires required. 
+Example 2: Artificial fertilization 
+The robot can collect individual cells such as sperm without damaging them. 
+
+Who will benefit from this innovation? 
+• Patients 
+• Medical professionals 
+
+What is the technology behind it and how does it work? 
+The robot is made of lightweight, soft rubber that contains magnetic material.
+ The robot itself is a magnet. It moves with the help of an external magnetic field – no cables 
+needed. It also contains sensors that continuously adapt the robot's movement. 
+
+Challenges 
+• A lengthy approval process for use as a medical device is necessary. 
+• Robot must be biocompatible, in other words, it must be safe for the body. • Robot must work 
+reliably over long periods. 
+• Technology should use minimal energy to operate without a battery.
+
+ When will this innovation be available?
+Approximately 2035 to 2040

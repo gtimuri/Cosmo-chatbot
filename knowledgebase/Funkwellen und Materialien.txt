@@ -1,0 +1,29 @@
+Projektname: Funkwellen und Materialien
+
+Wie verhalten sich Funkwellen?
+Welche Materialien beeinflussen sie? Funkwellen ermöglichen eine Vielzahl drahtloser digitaler
+Anwendungen. Sie reichen von Smartphones über Smart Homes bis hin zu autonomen Fahrzeu 
+gen. 
+Funkwellen breiten sich immer von einer Antenne aus. Antennen können unter schiedlich 
+strahlen: beispielsweise gerichtet, also gezielt in eine Richtung, oder kugelförmig in alle 
+Richtungen. 
+Verschiedene Materialien beeinflussen Funkwellen. Manche lassen Funkwellen durch, andere 
+schwächen sie ab oder blockieren sie gänzlich. Bestimmte Oberflächen können Funkwellen 
+auch reflektieren – ähnlich wie ein Spiegel Licht reflektiert. Deshalb ist ein Verständ nis von 
+Umgebungsfaktoren wichtig für die Erforschung der Funkkommunikation.
+
+Welches Problem lösen Funkwellen?
+ Funkwellen ermöglichen die kabellose Kommunikation zwischen technischen Geräten. Sie 
+machen diese Geräte mo bil und flexibel einsetzbar. Sie sind die Grundlage moderner 
+Kommunikation und verbinden Menschen weltweit.
+
+Das können Sie hier entdecken: 
+Bewegen Sie die Senderantenne, wäh rend Sie den Aktivierungsknopf gedrückt halten. So 
+können Sie sehen, wie sich Funkwellen in der Luft ausbreiten. Schauen Sie sich an, wie die 
+Empfangs antennen ihre Farbe in Abhängigkeit der empfangenen Funkwellen ändern. 
+Experimentieren Sie mit verschiedenen Materialien zwischen den Sender- und 
+Empfangsantennen. So können Sie sehen, wie Materialen den Verlauf der Funkwellen 
+beeinflussen.
+Nehmen Sie eine reflektierende Ober f läche in die Hand. So können Sie ver stehen, wie 
+Funkwellen ein Hindernis auf dem Weg zur Empfangsantenne überwinden können, wenn diese 
+„über Umwege“ neue Wege finden.

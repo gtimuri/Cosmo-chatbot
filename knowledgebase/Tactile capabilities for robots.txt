@@ -1,0 +1,34 @@
+Project name: Tactile capabilities for robots
+
+What problem does this innovation aim to solve?
+Robots do not (yet) have the sensitivity that humans have with their hands. Currently, they can
+only grasp. That is why they are not yet able to perform tasks that require close proximity - for 
+example in care. In future, robots with the ability to touch should be able to establish trust and 
+create proximity.
+
+What changes does this innovation bring? 
+Robots are no longer just functional. They will become real interacting partners that can inspire 
+trust in people.
+
+Who will benefit from this innovation? 
+Primarily people in care and medicine. Robots can support senior citizens at home and relieve 
+the burden on care staff.
+
+What is the technology behind it and how does it work? 
+Neuroscience and engineering researchers are investigating how touch creates trust and how 
+robots can perform it similar to humans. Therefore, they are developing small, sensitive sensors 
+and artificial skin. 
+The new robot technology should also be able to interpret facial expressions, body language 
+and vital signs such as heartbeat or temperature. In this way, robots should be able to 
+understand the meaning of touch even better in the future.
+
+Challenges 
+  Development of sensitive sensors: Robots must have sensors that can perceive touch as 
+accurately as human skin. These sensors must not be larger than fingers. 
+  Understanding of touch: Robots must learn to interpret touch correctly to enable meaningful 
+interactions. 
+  Building trust: Robots need to build trust through their touch, which is one of the biggest 
+challenges in human-robot interaction.
+
+ When will this innovation be available?
+Approximately 2040 to 2045

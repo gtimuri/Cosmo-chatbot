@@ -1,0 +1,40 @@
+Projektname: Künstliche Intelligenz (KI) für Mobilfunk
+
+Welches Problem soll diese Innovation lösen?
+Immer mehr Geräte sind auf eine sta bile Mobilfunkverbindung angewiesen – zum Beispiel
+Smartphones, Roboter oder Maschinen. Gleichzeitig steigen die Datenmengen im 
+Mobilfunknetz stark an. 
+Heute ist es eine große Herausforderung, alle Geräte gleichzeitig schnell und zuverlässig mit 
+einer stabilen und leis tungsfähigen Mobilfunkverbindung zu versorgen – besonders dort, wo 
+viele Menschen oder Maschinen gleichzeitig online sind.
+
+Welche Veränderungen bringt diese Innovation mit sich?
+ KI kann Mobilfunknetze deutlich verbes sern. Sie erkennt, wo gerade besonders viele Geräte im 
+Netz sind – zum Beispiel bei großen Veranstaltungen oder in Städten. Dann sorgt sie dafür, dass 
+genau dort mehr Leistung bereitgestellt wird, wo sie nötig ist, ohne Geräte oder Personen an 
+anderen Orten zu benach teiligen. So erhalten viele Menschen und Geräte gleichzeitig eine gute 
+und schnelle Verbindung. Auch die Down load-Geschwindigkeit kann steigen. Insgesamt hilft KI, 
+die digitale Kommu nikation besser und leistungsfähiger zu machen.
+
+ Wer wird von dieser Innovation profitieren? 
+Alle Menschen, die ein Smartphone oder ein anderes digitales Gerät nutzen. Auch 
+Einrichtungen wie Krankenhäuser, Fabriken oder Betreiber autonomer Fahrzeuge gewinnen an 
+Sicherheit. 
+
+Welche Technologie steckt dahinter, und wie funktioniert sie? 
+Mobilfunkgeräte senden regelmäßig Informationen an ihre nächste Basis station – zum Beispiel, welche Daten menge sie übertragen wollen. Die Basisstation muss dann entscheiden: Wer bekommt wie viele Ressourcen im Funkkanal und wann? (Der Funkkanal ist eine Art 
+unsichtbare Leitung, über die Daten zwischen einem Gerät und dem Netz gesendet werden.) KI 
+hilft da bei. Sie kann lernen, wie sich die Geräte normalerweise verhalten und welche 
+Ressourcen sie brauchen. So kann die Basisstation selbstständig voraus schauend reagieren – 
+je nachdem, wie viele Geräte da sind oder wie sich die Umgebung verändert. Und mehr noch: 
+Das gesamte Netz aller Basisstationen passt sich selbst an – ohne dass ein Mensch eingreifen 
+muss.
+
+ Herausforderungen 
+• KI ist gut im Erkennen von Mustern. Wenn aber etwas Ungewöhnliches passiert, weiß die KI oft 
+nicht, wie sie reagieren soll. Denn solche Situ ationen sind schwer zu trainieren. 
+• Außerdem muss KI im Mobilfunk sehr sparsam sein: Sie soll nicht mehr Energie und 
+Rechenleistung verbrau chen als die bisherigen Lösungen. 
+
+Wann wird diese Innovation verfügbar sein?
+Etwas 2030 bis 2040

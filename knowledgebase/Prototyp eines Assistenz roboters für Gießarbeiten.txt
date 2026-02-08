@@ -1,0 +1,44 @@
+Projektname: Prototyp eines Assistenz roboters für Gießarbeiten
+
+Welches Problem soll diese Innovation lösen?
+Die Pflanzen im Schlosspark Pillnitz leiden zunehmend unter Hitze und Trockenheit. Für die 
+Gärtnerinnen und Gärtner bedeutet dies erheblich mehr Arbeit (ca. 30%), da sie mehr gießen 
+müssen.
+
+Welche Veränderungen bringt diese Innovation mit sich?
+• Der Assistenzroboter hilft bei der Bewässerung. Er übernimmt haupt sächlich körperlich 
+anstrengende, sich wiederholende Aufgaben, die kein Fachwissen erfordern. 
+• Aktuell spart er den Fachkräften 20% Zeit. 
+• Er transportiert das Wasser bis zu den Pflanzen. Die Gärtnerinnen und Gärtner müssen keine 
+schweren Wasserschläuche mehr zu den Pflanzen ziehen. Sie kontrollieren jedoch den 
+Wasserbedarf der Pflanzen und geben dem Roboter Anweisungen, wohin er fahren soll. 
+• In Zukunft könnte der Roboter das Gießen übernehmen.
+
+Welche Menschen werden von dieser Innovation profitieren?
+ Dem Personal wird die Arbeit im Park Pillnitz erleichtert. Gäste können weiter hin einen 
+gepflegten Park genießen.
+
+Welche Technologie steckt dahinter, und wie funktioniert sie?
+ Der Roboter nutzt ein Satellitensystem (GPS), um durch den Park zu navigieren. Dazu prüft ein 
+Lichtradar Hindernisse in bis zu 10 m Entfernung. Ein Laser scanner erkennt Personen und 
+Objekte innerhalb eines 50-cm-Radius und schaltet den Roboter bei Bedarf ab. Der Roboter 
+tankt selbständig Wasser und erhält die Befehle der Fachkräfte anhand einer speziellen 
+Fernbedienung.
+
+Herausforderungen 
+• Entwicklerteams müssen Sicherheits systeme für die Nutzung im öffent lichen Raum und bei 
+schwierigen Wetter- und Bodenbedingungen bauen. 
+• Fachleute aus Technik und Entwick lung sollen auf Bedenken der Fach kräfte eingehen und 
+den Roboter entsprechend anpassen. 
+• Die Besucherinnen und Besucher des Parks müssen dem Roboter vertrauen und ihn 
+akzeptieren. 
+• Aus dem Prototyp soll ein marktfähi ges Produkt entstehen.
+
+Wann wird diese Innovation verfügbar sein?
+Etwas 2030 bis 2040
+
+Wer forscht daran?
+Das Barkhausen Institut (BI) in Zusammenarbeit mit Technical Design (TD).
+
+Was sehen wir?
+Einen Prototypen eines Roboters, der bei Bewässerungsaufgaben im Park von Schloss Pillnitz helfen soll.

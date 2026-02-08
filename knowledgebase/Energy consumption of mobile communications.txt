@@ -1,0 +1,19 @@
+Project name: Energy consumption of mobile communications
+
+What exactly is the problem? 
+People are using more and more mobile applications - for example for online shopping, music 
+streaming or video conferencing. But it is not just smart phones that send and receive data. 
+Cars, sensors and many other devices also access the mobile internet. As a result, the amount 
+of data is increasing rapidly. 
+Cell towers, routers and other devices transmit these data. They need energy - both during 
+production and operation. The more data flows, the higher the energy consumption. 
+
+What is the task of research here? 
+Mobile Internet should be possible without placing a greater burden on the environment.
+Each new generation of mobile communications can send more data and therefore requires 
+more energy. Re searchers are looking for ways to significantly reduce the power consumption 
+of 6G. Their aim is to transmit more data but consume less energy.
+
+What you can discover here: 
+Test your knowledge in this quiz on energy consumption of the Internet. Find out why the 
+Internet consumes energy and why increasing data traffic is a problem.

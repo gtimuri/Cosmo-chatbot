@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>COSMO Science - Forum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    function VoiceInterface({ chatId, onBack, onChatMode, onSendTranscribedText, initialLanguage = 'en' }) {
+      const [isHolding, setIsHolding] = useState(false);
+      const [transcribedText, setTranscribedText] = useState('');
+      const [isTranscribing, setIsTranscribing] = useState(false);
+      const [selectedLanguage, setSelectedLanguage] = useState(initialLanguage);
+      const [wsStatus, setWsStatus] = useState('idle'); // 'idle', 'waiting', 'ready'
+      const [botResponse, setBotResponse] = useState('');
+      const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+      const [isStreamingResponse, setIsStreamingResponse] = useState(false);
+      const [currentStreamingResponse, setCurrentStreamingResponse] = useState('');
+      const [spokenText, setSpokenText] = useState({ words: [], currentIndex: 0, blockStart: 0 });
+      const [isPlayingTTS, setIsPlayingTTS] = useState(false);
+      const [currentIntent, setCurrentIntent] = useState('feedback');
+      const [hasMicrophoneAccess, setHasMicrophoneAccess] = useState(false);
+      const [initialMessage, setInitialMessage] = useState('');
+      const [initialPlaybackDone, setInitialPlaybackDone] = useState(false);
+      const [initialPlaybackStarted, setInitialPlaybackStarted] = useState(false);
+      const [safariWaitingForTap, setSafariWaitingForTap] = useState(false);
+      const [hasUserStartedRecording, setHasUserStartedRecording] = useState(false);
+      const audioQueueRef = useRef([]);
+      const isPlayingRef = useRef(false);
+      const wordTimerRef = useRef(null);
+      const buttonRef = useRef(null);
+      const mediaRecorderRef = useRef(null);
+      const audioChunksRef = useRef([]);
+      const streamRef = useRef(null);
+      const websocketRef = useRef(null);
+      const sendIntervalRef = useRef(null);
+      const videoRef = useRef(null);
+      const currentHowlRef = useRef(null);
+      const textWithoutSoundRunRef = useRef(0);
+      const nextSentenceTimerRef = useRef(null);
+
+      useEffect(() => {
+        return () => {
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+          }
+          if (websocketRef.current) {
+            websocketRef.current.close();
+          }
+          if (sendIntervalRef.current) {
+            clearInterval(sendIntervalRef.current);
+          }
+          if (currentHowlRef.current) {
+            currentHowlRef.current.unload();
+            currentHowlRef.current = null;
+          }
+          if (wordTimerRef.current) {
+            clearTimeout(wordTimerRef.current);
+            wordTimerRef.current = null;
+          }
+          if (nextSentenceTimerRef.current) {
+            clearTimeout(nextSentenceTimerRef.current);
+            nextSentenceTimerRef.current = null;
+          }
+          audioQueueRef.current.forEach((item) => {
+            if (item.audioUrl) URL.revokeObjectURL(item.audioUrl);
+          });
+          audioQueueRef.current = [];
+          isPlayingRef.current = false;
+          setSpokenText({ words: [], currentIndex: 0, blockStart: 0 });
+          setIsPlayingTTS(false);
+        };
+      }, []);
+
+      const startDialogue = async () => {
+        try {
+          const response = await fetch(`/chats/${chatId}/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ language: selectedLanguage })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            synthesizeSpeech(data.message, true);
+          }
+        } catch (err) {
+          console.error('Error starting dialogue:', err);
+        }
+      };
+
+      const isSafari = () => {
+        if (typeof navigator === 'undefined') return false;
+        const ua = navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isSafariUA = /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+        return isIOS || isSafariUA;
+      };
+
+      useEffect(() => {
+        const initializeVoice = async () => {
+          if (chatId) {
+            const historyResponse = await fetch(`/chats/${chatId}/history`);
+            if (historyResponse.ok) {
+              const data = await historyResponse.json();
+              if (!data.messages || data.messages.length === 0) {
+                if (isSafari()) {
+                  setSafariWaitingForTap(true);
+                  return;
+                }
+                await startDialogue();
+              } else {
+                const firstBotMessage = data.messages.find(msg => msg.role === 'assistant');
+                if (firstBotMessage) {
+                  setInitialMessage(firstBotMessage.content);
+                  setInitialPlaybackStarted(true);
+                  setInitialPlaybackDone(true);
+                }
+              }
+            } else {
+              if (isSafari()) {
+                setSafariWaitingForTap(true);
+                return;
+              }
+              await startDialogue();
+            }
+          }
+        };
+        initializeVoice();
+      }, [chatId]);
+      
+      // Обновляем selectedLanguage когда меняется initialLanguage
+      useEffect(() => {
+        setSelectedLanguage(initialLanguage);
+      }, [initialLanguage]);
+
+      const requestMicrophoneAccess = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop());
+          return true;
+        } catch (error) {
+          console.error('Error requesting microphone access:', error);
+          let errorMessage = 'Cannot access microphone.';
+          
+          if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage = isSafari()
+              ? 'Microphone access denied. On Safari, allow access when the browser asks, or go to Settings → Safari → Microphone. Try tapping the record button again.'
+              : 'Microphone access denied. Please allow microphone access in your browser settings.';
+          } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            errorMessage = 'Microphone not found. Please make sure a microphone is connected.';
+          } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+            errorMessage = 'Microphone is being used by another application. Please close other applications using the microphone.';
+          }
+          
+          alert(errorMessage);
+          return false;
+        }
+      };
+
+      const getSupportedMimeType = () => {
+        const types = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/ogg;codecs=opus',
+          'audio/mp4',
+          'audio/wav'
+        ];
+        
+        for (const type of types) {
+          if (MediaRecorder.isTypeSupported(type)) {
+            return type;
+          }
+        }
+        return 'audio/webm';
+      };
+
+      const connectWebSocket = () => {
+        return new Promise((resolve, reject) => {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          const ws = new WebSocket(`${protocol}//${window.location.host}/chats/${chatId}/transcribe/stream`);
+          
+          ws.onopen = () => {
+            console.log('WebSocket connected');
+            const extension = getSupportedMimeType().includes('webm') ? 'webm' :
+                             getSupportedMimeType().includes('ogg') ? 'ogg' :
+                             getSupportedMimeType().includes('mp4') ? 'mp4' : 'wav';
+            ws.send(JSON.stringify({
+              type: 'start',
+              extension: extension,
+              language: selectedLanguage
+            }));
+            setWsStatus('waiting');
+            resolve(ws);
+          };
+          
+          ws.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              
+              if (data.status === 'ready') {
+                console.log('WebSocket ready');
+                setWsStatus('ready');
+              } else if (data.type === 'partial') {
+              setTranscribedText(data.text);
+              setIsTranscribing(false);
+              setBotResponse('');
+              setCurrentStreamingResponse('');
+            } else if (data.type === 'final') {
+              setTranscribedText(data.text);
+              setIsTranscribing(false);
+              setWsStatus('idle');
+              setBotResponse('');
+              setCurrentStreamingResponse('');
+              if (websocketRef.current) {
+                websocketRef.current.close();
+                websocketRef.current = null;
+              }
+              } else if (data.error) {
+                console.error('WebSocket error:', data.error);
+                setTranscribedText('Speech recognition error');
+                setIsTranscribing(false);
+                setWsStatus('idle');
+              }
+            } catch (error) {
+              console.error('Error parsing WebSocket message:', error);
+            }
+          };
+          
+          ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            setWsStatus('idle');
+            reject(error);
+          };
+          
+          ws.onclose = () => {
+            console.log('WebSocket closed');
+            websocketRef.current = null;
+            setWsStatus('idle');
+            setIsTranscribing(false);
+          };
+          
+          websocketRef.current = ws;
+        });
+      };
+
+      const unlockAudioForSafari = async () => {
+        // Howler.js разблокирует аудио при первом touch/click (autoUnlock)
+        if (typeof Howler !== 'undefined' && Howler.ctx && Howler.ctx.state === 'suspended') {
+          try { await Howler.ctx.resume(); } catch (e) { console.warn('Howler resume:', e); }
+        }
+      };
+
+      const startRecording = async () => {
+        try {
+          await unlockAudioForSafari();
+          setWsStatus('waiting');
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          streamRef.current = stream;
+          setHasMicrophoneAccess(true);
+          
+          await connectWebSocket();
+          
+          const mimeType = getSupportedMimeType();
+          const mediaRecorder = new MediaRecorder(stream, {
+            mimeType: mimeType,
+            timeslice: 1000
+          });
+          
+          audioChunksRef.current = [];
+          
+          mediaRecorder.ondataavailable = async (event) => {
+            if (event.data.size > 0 && websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+              try {
+                const arrayBuffer = await event.data.arrayBuffer();
+                websocketRef.current.send(arrayBuffer);
+              } catch (error) {
+                console.error('Error sending audio chunk:', error);
+              }
+            }
+          };
+          
+          mediaRecorder.onstop = async () => {
+            if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+              websocketRef.current.send(JSON.stringify({ type: 'end' }));
+            }
+            
+            if (streamRef.current) {
+              streamRef.current.getTracks().forEach(track => track.stop());
+              streamRef.current = null;
+            }
+          };
+          
+          mediaRecorderRef.current = mediaRecorder;
+          mediaRecorder.start(1000);
+          setIsTranscribing(true);
+        } catch (error) {
+          console.error('Error starting recording:', error);
+          setIsHolding(false);
+          setWsStatus('idle');
+          
+          if (websocketRef.current) {
+            websocketRef.current.close();
+            websocketRef.current = null;
+          }
+          
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+          }
+          
+          let errorMessage = 'Cannot start recording';
+          if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
+          } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            errorMessage = 'Microphone not found. Please make sure a microphone is connected.';
+          } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+            errorMessage = 'Microphone is being used by another application. Please close other applications using the microphone.';
+          }
+          
+          alert(errorMessage);
+        }
+      };
+
+      const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      };
+
+      const stopTTS = () => {
+        if (currentHowlRef.current) {
+          currentHowlRef.current.stop();
+          currentHowlRef.current.unload();
+          currentHowlRef.current = null;
+        }
+        audioQueueRef.current.forEach((item) => {
+          if (item.audioUrl) URL.revokeObjectURL(item.audioUrl);
+        });
+        audioQueueRef.current = [];
+        isPlayingRef.current = false;
+        if (wordTimerRef.current) {
+          clearTimeout(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
+        if (nextSentenceTimerRef.current) {
+          clearTimeout(nextSentenceTimerRef.current);
+          nextSentenceTimerRef.current = null;
+        }
+        setSpokenText({ words: [], currentIndex: 0, blockStart: 0 });
+        setIsPlayingTTS(false);
+      };
+
+      const handleStartRecording = async (e) => {
+        e.preventDefault();
+        
+        if (isLoadingResponse || isStreamingResponse) {
+          return;
+        }
+        if (initialMessage && !initialPlaybackDone && isPlayingTTS) {
+          return;
+        }
+        
+        if (isPlayingTTS) {
+          stopTTS();
+        }
+        
+        if (!hasMicrophoneAccess && !isSafari()) {
+          const hasAccess = await requestMicrophoneAccess();
+          if (!hasAccess) {
+            return;
+          }
+          setHasMicrophoneAccess(true);
+        }
+        
+        setHasUserStartedRecording(true);
+        setIsHolding(true);
+        setTranscribedText('');
+        setBotResponse('');
+        setCurrentStreamingResponse('');
+        setSpokenText({ words: [], currentIndex: 0, blockStart: 0 });
+        setIsLoadingResponse(false);
+        setIsStreamingResponse(false);
+        await startRecording();
+      };
+
+      const handleStopRecording = (e) => {
+        e.preventDefault();
+        setIsHolding(false);
+        stopRecording();
+      };
+
+      const handleMicClick = async (e) => {
+        e.preventDefault();
+        // Разблокировка ДОЛЖНА быть первой и не задерживаться другими await
+        await unlockAudioForSafari();
+
+        if (isHolding) {
+          handleStopRecording(e);
+        } else {
+          await handleStartRecording(e);
+        }
+      };
+
+      const getRobotImage = () => {
+        if (currentIntent === 'unsure') {
+          return '/static/img/dont_understand.png';
+        } else if (currentIntent === 'question') {
+          return '/static/img/answering.png';
+        } else {
+          return '/static/img/asking.png';
+        }
+      };
+
+      const getRobotVideo = () => {
+        if (currentIntent === 'unsure') {
+          return '/static/video/dont_understand.webm';
+        } else if (currentIntent === 'question') {
+          return '/static/video/answering.webm';
+        } else {
+          return '/static/video/asking.webm';
+        }
+      };
+
+      const playNextAudio = () => {
+        if (audioQueueRef.current.length === 0) {
+          console.log('[TTS] playNextAudio skip: queue empty');
+          return;
+        }
+        if (isPlayingRef.current) {
+          console.log('[TTS] playNextAudio skip: isPlaying, queueLen=', audioQueueRef.current.length);
+          return;
+        }
+        
+        isPlayingRef.current = true;
+        setIsPlayingTTS(true);
+        
+        const item = audioQueueRef.current.shift();
+        const sentence = item.sentence;
+        const audioUrl = item.audioUrl;
+        console.log('[TTS] playNextAudio sentence=', sentence?.slice(0, 40), 'queueRemain=', audioQueueRef.current.length);
+        
+        if (wordTimerRef.current) {
+          clearTimeout(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
+        
+        const runWordAnimation = (sent, durationMs) => {
+          const words = (sent || sentence).split(/(\s+)/).filter(w => w.length > 0);
+          const wordCount = words.filter(w => w.trim().length > 0).length;
+          const safeDuration = (durationMs && durationMs > 500) ? durationMs : (wordCount * 300);
+          const interval = Math.max(20, (safeDuration / (wordCount * 2.3)));
+          const WORDS_PER_BLOCK = 32;
+          let currentWordIndex = 0;
+          let currentBlockStart = 0;
+          const initializeBlock = () => {
+            const blockWords = words.slice(currentBlockStart, currentBlockStart + WORDS_PER_BLOCK);
+            setSpokenText({ words: blockWords, currentIndex: 0, blockStart: currentBlockStart });
+          };
+          initializeBlock();
+          const highlightNextWord = () => {
+            currentWordIndex++;
+            setSpokenText(prev => {
+              if (currentWordIndex > prev.words.length) {
+                currentBlockStart += WORDS_PER_BLOCK;
+                if (currentBlockStart < words.length) {
+                  const nextBlockWords = words.slice(currentBlockStart, currentBlockStart + WORDS_PER_BLOCK);
+                  currentWordIndex = 0;
+                  return { words: nextBlockWords, currentIndex: 0, blockStart: currentBlockStart };
+                } else {
+                  if (wordTimerRef.current) { clearTimeout(wordTimerRef.current); wordTimerRef.current = null; }
+                  return { ...prev, currentIndex: prev.words.length };
+                }
+              }
+              return { ...prev, currentIndex: currentWordIndex };
+            });
+            const total = currentBlockStart + currentWordIndex;
+            if (total <= words.length) wordTimerRef.current = setTimeout(highlightNextWord, interval);
+          };
+          if (words.length > 0) wordTimerRef.current = setTimeout(highlightNextWord, interval);
+        };
+        
+        const onSegmentError = (fullText) => {
+          if (audioUrl) URL.revokeObjectURL(audioUrl);
+          isPlayingRef.current = false;
+          setIsPlayingTTS(false);
+          if (wordTimerRef.current) { clearTimeout(wordTimerRef.current); wordTimerRef.current = null; }
+          audioQueueRef.current.forEach((i) => { if (i.audioUrl) URL.revokeObjectURL(i.audioUrl); });
+          audioQueueRef.current = [];
+          playTextWithoutSound(fullText, !!(initialMessage && !initialPlaybackDone));
+        };
+        
+        if (!audioUrl) {
+          onSegmentError(sentence);
+          return;
+        }
+        if (typeof Howl === 'undefined') {
+          console.error('[TTS] Howler.js not loaded');
+          onSegmentError(sentence);
+          return;
+        }
+        
+        const sound = new Howl({
+          src: [audioUrl],
+          format: ['mp3'],
+          html5: false,
+          onload: function() {
+            const sec = sound.duration();
+            const d = (sec && sec > 0) ? sec * 1000 : 0;
+            runWordAnimation(sentence, d);
+          },
+          onend: function() {
+            if (audioUrl) URL.revokeObjectURL(audioUrl);
+            isPlayingRef.current = false;
+            if (wordTimerRef.current) { clearTimeout(wordTimerRef.current); wordTimerRef.current = null; }
+            if (audioQueueRef.current.length > 0) {
+              playNextAudio();
+            } else {
+              setIsPlayingTTS(false);
+              setInitialPlaybackDone(true);
+            }
+            currentHowlRef.current = null;
+          },
+          onloaderror: function(id, code) {
+            console.error('[TTS] Howler loaderror:', code);
+            onSegmentError(sentence);
+            currentHowlRef.current = null;
+          },
+          onplayerror: function(id, code) {
+            console.warn('[TTS] Howler playerror:', code, '- retry on unlock');
+            sound.once('unlock', () => sound.play());
+          }
+        });
+        
+        currentHowlRef.current = sound;
+        sound.play();
+      };
+
+      const playTextWithoutSound = (text, markInitialCompletedWhenDone = false) => {
+        if (wordTimerRef.current) {
+          clearTimeout(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
+        if (nextSentenceTimerRef.current) {
+          clearTimeout(nextSentenceTimerRef.current);
+          nextSentenceTimerRef.current = null;
+        }
+        textWithoutSoundRunRef.current += 1;
+        const myRunId = textWithoutSoundRunRef.current;
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+        let currentSentenceIndex = 0;
+        
+        const playSentence = () => {
+          if (myRunId !== textWithoutSoundRunRef.current) return;
+          if (currentSentenceIndex >= sentences.length) {
+            setIsPlayingTTS(false);
+            if (markInitialCompletedWhenDone) setInitialPlaybackDone(true);
+            return;
+          }
+          
+          const sentence = sentences[currentSentenceIndex].trim();
+          const words = sentence.split(/(\s+)/).filter(w => w.length > 0);
+
+          const fallbackInterval = 150;
+          
+          const WORDS_PER_BLOCK = 32;
+          let currentWordIndex = 0;
+          let currentBlockStart = 0;
+          
+          const initializeBlock = () => {
+            const blockWords = words.slice(currentBlockStart, currentBlockStart + WORDS_PER_BLOCK);
+            setSpokenText({
+              words: blockWords,
+              currentIndex: 0,
+              blockStart: currentBlockStart
+            });
+          };
+          
+          initializeBlock();
+          
+          const highlightNextWord = () => {
+            if (myRunId !== textWithoutSoundRunRef.current) return;
+            currentWordIndex++;
+            
+            setSpokenText(prev => {
+              if (currentWordIndex > prev.words.length) {
+                currentBlockStart += WORDS_PER_BLOCK;
+                
+                if (currentBlockStart < words.length) {
+                  const nextBlockWords = words.slice(currentBlockStart, currentBlockStart + WORDS_PER_BLOCK);
+                  currentWordIndex = 0;
+                  return {
+                    words: nextBlockWords,
+                    currentIndex: 0,
+                    blockStart: currentBlockStart
+                  };
+                } else {
+                  clearTimeout(wordTimerRef.current);
+                  wordTimerRef.current = null;
+                  currentSentenceIndex++;
+                  if (currentSentenceIndex < sentences.length) {
+                    nextSentenceTimerRef.current = setTimeout(playSentence, 400);
+                  } else {
+                    setIsPlayingTTS(false);
+                    if (markInitialCompletedWhenDone) setInitialPlaybackDone(true);
+                  }
+                  return prev;
+                }
+              } else {
+                return {
+                  ...prev,
+                  currentIndex: currentWordIndex
+                };
+              }
+            });
+            
+            const totalWordsProcessed = currentBlockStart + currentWordIndex;
+            if (totalWordsProcessed <= words.length) {
+              wordTimerRef.current = setTimeout(highlightNextWord, fallbackInterval);
+            }
+          };
+          
+          if (words.length > 0) {
+            wordTimerRef.current = setTimeout(highlightNextWord, fallbackInterval);
+          }
+        };
+        
+        setIsPlayingTTS(true);
+        playSentence();
+      };
+
+      const synthesizeSpeech = async (text, isInitialMessage = false, onTTSStarted = null) => {
+        // Ответы бота (isInitialMessage=false) всегда озвучиваются через Howler во всех браузерах, включая Safari. playTextWithoutSound — только fallback при ошибке.
+        if (currentHowlRef.current) {
+          currentHowlRef.current.stop();
+          currentHowlRef.current.unload();
+          currentHowlRef.current = null;
+        }
+        audioQueueRef.current.forEach((i) => { if (i.audioUrl) URL.revokeObjectURL(i.audioUrl); });
+        audioQueueRef.current = [];
+        isPlayingRef.current = false;
+        setSpokenText({ words: [], currentIndex: 0, blockStart: 0 });
+        setIsPlayingTTS(false);
+        
+        if (isInitialMessage && text) {
+          setInitialMessage(text);
+        }
+        if (!isInitialMessage && initialMessage && text !== initialMessage) {
+          setInitialMessage('');
+        }
+        
+        try {
+          const payload = {
+            text: text,
+            language: selectedLanguage
+          };
+          
+          const response = await fetch('/tts/stream', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('TTS failed:', response.status, errorText);
+            if (isSafari()) {
+              alert('Safari TTS request failed: ' + response.status + ' ' + (errorText || response.statusText || ''));
+            }
+            if (isInitialMessage) {
+              setInitialMessage(text);
+              setInitialPlaybackStarted(true);
+            }
+            playTextWithoutSound(text, isInitialMessage);
+            onTTSStarted?.();
+            return;
+          }
+          
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let hasReceivedAudio = false;
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  
+                    if (data.error) {
+                    console.error('TTS error:', data.error);
+                    if (isSafari()) {
+                      alert('Safari TTS stream error: ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)));
+                    }
+                    if (isInitialMessage) {
+                      setInitialMessage(text);
+                      setInitialPlaybackStarted(true);
+                    }
+                    playTextWithoutSound(text, isInitialMessage);
+                    onTTSStarted?.();
+                    return;
+                  }
+                  
+                  if (data.sentence && data.audio) {
+                    hasReceivedAudio = true;
+                    console.log('[TTS] received chunk sentence=', data.sentence?.slice(0, 40), 'isInitial=', isInitialMessage);
+                    if (isInitialMessage) {
+                      if (!initialMessage) setInitialMessage(text);
+                      setInitialPlaybackStarted(true);
+                    }
+                    const audioBytes = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
+                    const audioBlob = new Blob([audioBytes], { type: 'audio/mpeg' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioQueueRef.current.push({ audioUrl, sentence: data.sentence });
+                    
+                    if (!isPlayingRef.current) {
+                      onTTSStarted?.();
+                      playNextAudio();
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error parsing TTS SSE data:', e);
+                }
+              }
+            }
+          }
+          
+          if (isInitialMessage && !hasReceivedAudio) {
+            setInitialMessage(text);
+            setInitialPlaybackStarted(true);
+            playTextWithoutSound(text, true);
+          }
+          onTTSStarted?.();
+        } catch (error) {
+          console.error('Error in TTS:', error);
+          if (isSafari()) {
+            const msg = error && (error.message || error.name || String(error));
+            alert('Safari TTS error (catch): ' + msg);
+          }
+          if (isInitialMessage) {
+            setInitialMessage(text);
+            setInitialPlaybackStarted(true);
+          }
+          playTextWithoutSound(text, isInitialMessage);
+          onTTSStarted?.();
+        }
+      };
+
+      const sendMessageToBot = async (messageText) => {
+        if (!messageText.trim() || isLoadingResponse || isStreamingResponse) return;
+
+        setIsLoadingResponse(true);
+        setIsStreamingResponse(true);
+        setCurrentStreamingResponse('');
+        setBotResponse('');
+        setCurrentIntent('feedback');
+
+        try {
+          const response = await fetch(`/chats/${chatId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: messageText })
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to send message');
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let streamingContent = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.intent) {
+                    setCurrentIntent(data.intent);
+                  } else if (data.content) {
+                    streamingContent += data.content;
+                    setCurrentStreamingResponse(streamingContent);
+                  } else if (data.done) {
+                    const finalText = streamingContent;
+                    setBotResponse(finalText);
+                    setCurrentStreamingResponse('');
+                    streamingContent = '';
+                    setIsStreamingResponse(false);
+                    
+                    if (finalText && finalText.trim()) {
+                      synthesizeSpeech(finalText, false, () => setIsLoadingResponse(false));
+                    } else {
+                      setIsLoadingResponse(false);
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error parsing SSE data:', e);
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error sending message:', error);
+          setBotResponse('Error: Failed to get response from server');
+          setIsLoadingResponse(false);
+          setIsStreamingResponse(false);
+        }
+      };
+
+      const handleSendText = () => {
+        if (transcribedText.trim()) {
+          if (isLoadingResponse || isStreamingResponse || (botResponse && !isPlayingTTS)) {
+            return;
+          }
+          
+          if (isHolding) {
+            stopRecording();
+            setIsHolding(false);
+          }
+          
+          if (isPlayingTTS) {
+            stopTTS();
+          }
+          
+          const textToSend = transcribedText.trim();
+          setTranscribedText('');
+          sendMessageToBot(textToSend);
+        }
+      };
+
+      const micAndChatDisabled = !initialPlaybackDone || isLoadingResponse || isStreamingResponse;
+
+      const voiceHintTexts = {
+        en: { tapToStart: "Tap to start", tapToStartRecording: "Tap to start recording", tapToStop: "Tap to stop", listening: "Listening..." },
+        de: { tapToStart: "Tippen zum Starten", tapToStartRecording: "Tippen zum Aufnehmen", tapToStop: "Tippen zum Stoppen", listening: "Wird aufgenommen..." },
+        ru: { tapToStart: "Нажмите для старта", tapToStartRecording: "Нажмите для записи", tapToStop: "Нажмите для остановки", listening: "Идёт запись..." }
+      };
+
+      const handleSafariTapToStart = async () => {
+        if (!safariWaitingForTap) return;
+        await unlockAudioForSafari();
+        sessionStorage.setItem('cosmoPermissionsOk', '1');
+        setSafariWaitingForTap(false);
+        startDialogue();
+      };
+
+      return (
+        <div className="voice-interface">
+          <div className="voice-content">
+            <div className="robot-image-container-voice">
+              {isPlayingTTS && !isSafari() ? (
+                <video 
+                  ref={videoRef}
+                  src={getRobotVideo()} 
+                  autoPlay
+                  loop
+                  muted 
+                  playsInline
+                  className="robot-video-voice"
+                />
+              ) : (
+                <img 
+                  src={getRobotImage()} 
+                  alt="COSMO Robot" 
+                  className="robot-image-voice"
+                />
+              )}
+            </div>
+            
+            {!isLoadingResponse && !isStreamingResponse && (!spokenText || !spokenText.words || spokenText.words.length === 0) && !transcribedText && !isTranscribing && initialMessage && initialPlaybackStarted && !isPlayingTTS && !hasUserStartedRecording && (
+              <div className="voice-spoken-text">
+                {initialMessage}
+              </div>
+            )}
+            {!isLoadingResponse && !isStreamingResponse && !botResponse && (!spokenText || !spokenText.words || spokenText.words.length === 0) && transcribedText && (
+              <div className="voice-transcribed-text">
+                {transcribedText}
+              </div>
+            )}
+            {isTranscribing && !transcribedText && !isLoadingResponse && !isStreamingResponse && !botResponse && (!spokenText || !spokenText.words || spokenText.words.length === 0) && (
+              <div className="voice-transcribing-indicator">
+                {(voiceHintTexts[selectedLanguage] || voiceHintTexts.en).listening}
+              </div>
+            )}
+            {(isLoadingResponse || isStreamingResponse || (botResponse && (!spokenText || !spokenText.words || spokenText.words.length === 0) && !initialMessage)) && (!spokenText || !spokenText.words || spokenText.words.length === 0) && (
+              <div className="voice-spoken-text">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            )}
+            {spokenText && spokenText.words && spokenText.words.length > 0 && (
+              <div className="voice-spoken-text">
+                {spokenText.words.map((word, index) => (
+                  <span
+                    key={index}
+                    className={index < spokenText.currentIndex ? 'word-highlighted' : ''}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="voice-bottom-shape">
+            <svg width="402" height="455" viewBox="0 0 402 455" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g opacity="0.4" filter="url(#filter0_f_115_3446)">
+                <path d="M360.5 370.583C328.773 393.739 326.623 398.723 293.458 398.723C260.293 398.723 272.353 252.998 230.143 252.998C187.933 252.998 193.963 370.583 101.503 370.583C65.1981 370.583 75.3276 411.273 40.4979 392.498C5.66817 373.723 6.00001 275.998 -0.00207432 129.998C-35.0021 129.999 -0.0020766 452.994 -0.0020766 452.994L401.998 452.994C401.998 452.994 425.5 119.997 401.998 119.998C397 274.498 392.227 347.428 360.5 370.583Z" fill="url(#paint0_linear_115_3446)"/>
+              </g>
+              <defs>
+                <filter id="filter0_f_115_3446" x="-135.555" y="-4.57764e-05" width="667.996" height="572.992" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                  <feGaussianBlur stdDeviation="59.9988" result="effect1_foregroundBlur_115_3446"/>
+                </filter>
+                <linearGradient id="paint0_linear_115_3446" x1="402" y1="452.992" x2="0.000495415" y2="452.993" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#f05149"/>
+                  <stop offset="1" stopColor="#58b89c"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div className="voice-button-container">
+            <p className="voice-hint-text">
+              {safariWaitingForTap ? (voiceHintTexts[selectedLanguage] || voiceHintTexts.en).tapToStart : isHolding ? (voiceHintTexts[selectedLanguage] || voiceHintTexts.en).tapToStop : (voiceHintTexts[selectedLanguage] || voiceHintTexts.en).tapToStartRecording}
+            </p>
+            <select
+              className="voice-language-select"
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              disabled={isHolding}
+            >
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="ru">Русский</option>
+            </select>
+            <div className="voice-controls-row">
+              <button
+                className="voice-chat-button"
+                onClick={() => {
+                  if (micAndChatDisabled) {
+                    return;
+                  }
+                  if (isPlayingTTS) {
+                    stopTTS();
+                  }
+                  onChatMode();
+                }}
+                disabled={micAndChatDisabled}
+                title="Switch to chat"
+              >
+                <svg width="21" height="15" viewBox="0 0 21 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19.4541 0H1.54781C1.13763 -3.00961e-07 0.744223 0.162815 0.454006 0.452681C0.163789 0.742546 0.000496888 1.13576 0 1.54594V13.4522C-3.00961e-07 13.8624 0.162815 14.2558 0.452681 14.546C0.742546 14.8362 1.13576 14.9995 1.54594 15H19.4522C19.8624 15 20.2558 14.8372 20.546 14.5473C20.8362 14.2575 20.9995 13.8642 21 13.4541V1.54781C21 1.13763 20.8372 0.744223 20.5473 0.454006C20.2575 0.163789 19.8642 0.000496888 19.4541 0ZM19.5 13.4541C19.5 13.4601 19.4988 13.4661 19.4965 13.4716C19.4942 13.4772 19.4908 13.4823 19.4865 13.4865C19.4823 13.4908 19.4772 13.4942 19.4716 13.4965C19.4661 13.4988 19.4601 13.5 19.4541 13.5H1.54781C1.54178 13.5 1.53581 13.4988 1.53023 13.4965C1.52466 13.4942 1.5196 13.4908 1.51533 13.4865C1.51106 13.4823 1.50768 13.4772 1.50537 13.4716C1.50306 13.4661 1.50188 13.4601 1.50188 13.4541V1.54781C1.50188 1.53563 1.50671 1.52395 1.51533 1.51533C1.52394 1.50672 1.53563 1.50187 1.54781 1.50187H19.4541C19.4662 1.50187 19.4779 1.50672 19.4865 1.51533C19.4952 1.52395 19.5 1.53563 19.5 1.54781V13.4541ZM18 7.5C18 7.69891 17.921 7.88968 17.7803 8.03033C17.6397 8.17098 17.4489 8.25 17.25 8.25H3.75C3.55109 8.25 3.36032 8.17098 3.21967 8.03033C3.07902 7.88968 3 7.69891 3 7.5C3 7.30109 3.07902 7.11032 3.21967 6.96967C3.36032 6.82902 3.55109 6.75 3.75 6.75H17.25C17.4489 6.75 17.6397 6.82902 17.7803 6.96967C17.921 7.11032 18 7.30109 18 7.5ZM18 4.5C18 4.69891 17.921 4.88968 17.7803 5.03033C17.6397 5.17098 17.4489 5.25 17.25 5.25H3.75C3.55109 5.25 3.36032 5.17098 3.21967 5.03033C3.07902 4.88968 3 4.69891 3 4.5C3 4.30109 3.07902 4.11032 3.21967 3.96967C3.36032 3.82902 3.55109 3.75 3.75 3.75H17.25C17.4489 3.75 17.6397 3.82902 17.7803 3.96967C17.921 4.11032 18 4.30109 18 4.5ZM5.25 10.5C5.25 10.6989 5.17098 10.8897 5.03033 11.0303C4.88968 11.171 4.69891 11.25 4.5 11.25H3.75C3.55109 11.25 3.36032 11.171 3.21967 11.0303C3.07902 10.8897 3 10.6989 3 10.5C3 10.3011 3.07902 10.1103 3.21967 9.96967C3.36032 9.82902 3.55109 9.75 3.75 9.75H4.5C4.69891 9.75 4.88968 9.82902 5.03033 9.96967C5.17098 10.1103 5.25 10.3011 5.25 10.5ZM14.25 10.5C14.25 10.6989 14.171 10.8897 14.0303 11.0303C13.8897 11.171 13.6989 11.25 13.5 11.25H7.5C7.30109 11.25 7.11032 11.171 6.96967 11.0303C6.82902 10.8897 6.75 10.6989 6.75 10.5C6.75 10.3011 6.82902 10.1103 6.96967 9.96967C7.11032 9.82902 7.30109 9.75 7.5 9.75H13.5C13.6989 9.75 13.8897 9.82902 14.0303 9.96967C14.171 10.1103 14.25 10.3011 14.25 10.5ZM18 10.5C18 10.6989 17.921 10.8897 17.7803 11.0303C17.6397 11.171 17.4489 11.25 17.25 11.25H16.5C16.3011 11.25 16.1103 11.171 15.9697 11.0303C15.829 10.8897 15.75 10.6989 15.75 10.5C15.75 10.3011 15.829 10.1103 15.9697 9.96967C16.1103 9.82902 16.3011 9.75 16.5 9.75H17.25C17.4489 9.75 17.6397 9.82902 17.7803 9.96967C17.921 10.1103 18 10.3011 18 10.5Z" fill={micAndChatDisabled ? "#CCCCCC" : "#333333"}/>
+                </svg>
+              </button>
+              <button
+                ref={buttonRef}
+                className={`voice-record-button ${
+                  safariWaitingForTap ? '' : isHolding && wsStatus === 'ready' ? 'voice-record-button-active' : 
+                  isHolding && wsStatus === 'waiting' ? 'voice-record-button-waiting' : 
+                  ''
+                }`}
+                disabled={safariWaitingForTap ? false : micAndChatDisabled}
+                onClick={safariWaitingForTap ? handleSafariTapToStart : handleMicClick}
+                type="button"
+              >
+                {safariWaitingForTap ? (
+                  <svg className="voice-play-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 5v14l11-7L8 5z" fill="#333333"/>
+                  </svg>
+                ) : isHolding ? (
+                  <svg className="voice-stop-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="6" width="12" height="12" rx="2" fill="#FFFFFF"/>
+                  </svg>
+                ) : (
+                  <svg className="voice-mic-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill={micAndChatDisabled ? "#CCCCCC" : "#333333"}/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke={micAndChatDisabled ? "#CCCCCC" : "#333333"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <line x1="12" y1="19" x2="12" y2="23" stroke={micAndChatDisabled ? "#CCCCCC" : "#333333"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="8" y1="23" x2="16" y2="23" stroke={micAndChatDisabled ? "#CCCCCC" : "#333333"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+              <button
+                className="voice-send-button"
+                onClick={handleSendText}
+                disabled={!transcribedText.trim() || micAndChatDisabled}
+                title="Send transcribed text"
+              >
+                <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M17.8531 10.0489C17.8846 9.9569 17.8887 9.85839 17.8637 9.76438C17.2699 7.53874 6.2455 1.21209 2.78127 0.14839C1.8788 -0.128813 1.22487 -0.0171888 0.840955 0.479185C-0.271833 1.91586 2.02626 6.38328 3.36744 8.71927L10.3154 8.9633C10.718 8.9774 11.0329 9.31612 11.0189 9.7199C11.0048 10.1237 10.6671 10.4395 10.2645 10.4254L3.24991 10.1784C1.74022 12.4449 -0.767713 16.6315 0.226764 18.1186C0.264029 18.1744 0.30485 18.2268 0.349275 18.2746C0.716601 18.6697 1.31831 18.7735 2.13868 18.5836C5.66633 17.7668 17.1044 12.2303 17.8531 10.0489Z" fill={(!transcribedText.trim() || micAndChatDisabled) ? "#CCCCCC" : "#333333"}/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ChatInterface({ chatId, onVoiceMode, pendingMessage, onMessageSent, initialPlaceholder, language = 'en' }) {
+      const [messages, setMessages] = useState([]);
+      const [inputValue, setInputValue] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [isStreaming, setIsStreaming] = useState(false);
+      const [currentStreamingMessage, setCurrentStreamingMessage] = useState('');
+      const [placeholder, setPlaceholder] = useState(initialPlaceholder || 'Message');
+
+      useEffect(() => {
+        if (initialPlaceholder) {
+          setPlaceholder(initialPlaceholder);
+        }
+      }, [initialPlaceholder]);
+
+      const calculateTextareaHeight = (text, isPlaceholder = false) => {
+        if (!textareaRef.current) return null;
+        
+        const tempElement = document.createElement('div');
+        tempElement.style.position = 'absolute';
+        tempElement.style.visibility = 'hidden';
+        tempElement.style.whiteSpace = 'pre-wrap';
+        tempElement.style.wordWrap = 'break-word';
+        tempElement.style.fontFamily = getComputedStyle(textareaRef.current).fontFamily;
+        tempElement.style.fontSize = getComputedStyle(textareaRef.current).fontSize;
+        tempElement.style.fontWeight = getComputedStyle(textareaRef.current).fontWeight;
+        tempElement.style.padding = getComputedStyle(textareaRef.current).padding;
+        tempElement.style.width = textareaRef.current.offsetWidth + 'px';
+        tempElement.style.lineHeight = getComputedStyle(textareaRef.current).lineHeight;
+        tempElement.textContent = text;
+        document.body.appendChild(tempElement);
+        
+        const textHeight = tempElement.offsetHeight;
+        document.body.removeChild(tempElement);
+        
+        const minHeight = 50;
+        const maxHeight = 100;
+        const calculatedHeight = Math.max(minHeight, Math.min(maxHeight, textHeight));
+        
+        return calculatedHeight;
+      };
+      const messagesEndRef = useRef(null);
+      const chatContainerRef = useRef(null);
+      const textareaRef = useRef(null);
+
+      const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      const startDialogue = async () => {
+        try {
+          const response = await fetch(`/chats/${chatId}/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ language: language })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setMessages([{
+              role: 'assistant',
+              content: data.message
+            }]);
+          }
+        } catch (err) {
+          console.error('Error starting dialogue:', err);
+        }
+      };
+
+      useEffect(() => {
+        const initializeChat = async () => {
+          const historyResponse = await fetch(`/chats/${chatId}/history`);
+          if (historyResponse.ok) {
+            const data = await historyResponse.json();
+            if (data.messages && data.messages.length > 0) {
+              setMessages(data.messages);
+            } else {
+              await startDialogue();
+            }
+          } else {
+            await startDialogue();
+          }
+        };
+        if (chatId) {
+          initializeChat();
+        }
+      }, [chatId]);
+
+      useEffect(() => {
+        if (pendingMessage && pendingMessage.trim() && !isLoading && !isStreaming && messages.length >= 0) {
+          const timer = setTimeout(() => {
+            sendMessage(pendingMessage);
+            if (onMessageSent) {
+              onMessageSent();
+            }
+          }, 100);
+          return () => clearTimeout(timer);
+        }
+      }, [pendingMessage]);
+
+      useEffect(() => {
+        scrollToBottom();
+      }, [messages, currentStreamingMessage]);
+
+      useEffect(() => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = '50px';
+        }
+      }, []);
+
+      const sendMessage = async (messageText) => {
+        if (!messageText.trim() || isLoading || isStreaming) return;
+
+        const userMessage = {
+          role: 'user',
+          content: messageText
+        };
+
+        setMessages(prev => [...prev, userMessage]);
+        setInputValue('');
+        setIsLoading(true);
+        setIsStreaming(true);
+        setCurrentStreamingMessage('');
+
+        try {
+          const response = await fetch(`/chats/${chatId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: messageText })
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to send message');
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let streamingContent = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.content) {
+                    streamingContent += data.content;
+                    setCurrentStreamingMessage(streamingContent);
+                  } else if (data.done) {
+                    const finalMessage = {
+                      role: 'assistant',
+                      content: streamingContent
+                    };
+                    setMessages(prev => [...prev, finalMessage]);
+                    setCurrentStreamingMessage('');
+                    streamingContent = '';
+                    setIsStreaming(false);
+                  }
+                } catch (e) {
+                  console.error('Error parsing SSE data:', e);
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error sending message:', err);
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: 'Sorry, there was an error sending your message.'
+          }]);
+        } finally {
+          setIsLoading(false);
+          setIsStreaming(false);
+        }
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (inputValue.trim()) {
+          sendMessage(inputValue.trim());
+        }
+      };
+
+      const handleInputChange = (e) => {
+        setInputValue(e.target.value);
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+          const newHeight = Math.min(Math.max(textareaRef.current.scrollHeight, 50), 100);
+          textareaRef.current.style.height = newHeight + 'px';
+        }
+      };
+
+      useEffect(() => {
+        if (textareaRef.current) {
+          if (!inputValue) {
+            if (placeholder) {
+              setTimeout(() => {
+                const height = calculateTextareaHeight(placeholder, true);
+                if (height && textareaRef.current) {
+                  textareaRef.current.style.height = height + 'px';
+                }
+              }, 0);
+            } else {
+              textareaRef.current.style.height = '50px';
+            }
+          } else {
+            textareaRef.current.style.height = 'auto';
+            const newHeight = Math.min(Math.max(textareaRef.current.scrollHeight, 50), 100);
+            textareaRef.current.style.height = newHeight + 'px';
+          }
+        }
+      }, [inputValue, placeholder]);
+
+      return (
+        <div className="chat-interface">
+          <div className="chat-messages" ref={chatContainerRef}>
+            {messages.map((msg, index) => (
+              <div key={index} className={`chat-message ${msg.role === 'user' ? 'user-message' : 'bot-message'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="bot-avatar">
+                    <img src="/static/img/answering.png" alt="COSMO bot" className="bot-avatar-img" />
+                  </div>
+                )}
+                <div className="message-content">{msg.content}</div>
+              </div>
+            ))}
+            {/* Индикатор "бот думает" - показывается когда идет загрузка, но еще нет контента */}
+            {(isStreaming || isLoading) && !currentStreamingMessage && (
+              <div className="chat-message bot-message">
+                <div className="bot-avatar">
+                  <img src="/static/img/answering.png" alt="COSMO bot" className="bot-avatar-img" />
+                </div>
+                <div className="message-content">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Стриминг ответа */}
+            {isStreaming && currentStreamingMessage && (
+              <div className="chat-message bot-message">
+                <div className="bot-avatar">
+                  <img src="/static/img/answering.png" alt="COSMO bot" className="bot-avatar-img" />
+                </div>
+                <div className="message-content">{currentStreamingMessage}</div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          <form className="chat-input-container" onSubmit={handleSubmit}>
+            <div className="chat-input-wrapper">
+              <textarea
+                ref={textareaRef}
+                className="chat-input"
+                placeholder={placeholder}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                disabled={isLoading || isStreaming}
+                rows={1}
+              />
+              <button type="submit" className="chat-send-button" disabled={!inputValue.trim() || isLoading || isStreaming}>
+                <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M17.8531 10.0489C17.8846 9.9569 17.8887 9.85839 17.8637 9.76438C17.2699 7.53874 6.2455 1.21209 2.78127 0.14839C1.8788 -0.128813 1.22487 -0.0171888 0.840955 0.479185C-0.271833 1.91586 2.02626 6.38328 3.36744 8.71927L10.3154 8.9633C10.718 8.9774 11.0329 9.31612 11.0189 9.7199C11.0048 10.1237 10.6671 10.4395 10.2645 10.4254L3.24991 10.1784C1.74022 12.4449 -0.767713 16.6315 0.226764 18.1186C0.264029 18.1744 0.30485 18.2268 0.349275 18.2746C0.716601 18.6697 1.31831 18.7735 2.13868 18.5836C5.66633 17.7668 17.1044 12.2303 17.8531 10.0489Z" fill="#333333"/>
+                </svg>
+              </button>
+            </div>
+            <button type="button" className="chat-voice-button" onClick={onVoiceMode} disabled={isLoading || isStreaming}>
+              <svg width="17" height="20" viewBox="0 0 17 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" clipRule="evenodd" d="M4.75 1.2C4.75 0.537258 5.28726 0 5.95 0C6.61274 0 7.15 0.537258 7.15 1.2V18C7.15 18.6627 6.61274 19.2 5.95 19.2C5.28726 19.2 4.75 18.6627 4.75 18V1.2ZM10.75 3.2C10.0873 3.2 9.55 3.73726 9.55 4.4V14.8C9.55 15.4627 10.0873 16 10.75 16C11.4127 16 11.95 15.4627 11.95 14.8V4.4C11.95 3.73726 11.4127 3.2 10.75 3.2ZM15.55 5.6C14.8873 5.6 14.35 6.13726 14.35 6.8V12.4C14.35 13.0627 14.8873 13.6 15.55 13.6C16.2127 13.6 16.75 13.0627 16.75 12.4V6.8C16.75 6.13726 16.2127 5.6 15.55 5.6ZM1.2 5.6C0.537258 5.6 0 6.13726 0 6.8V12.4C0 13.0627 0.537258 13.6 1.2 13.6C1.86274 13.6 2.4 13.0627 2.4 12.4V6.8C2.4 6.13726 1.86274 5.6 1.2 5.6Z" fill="url(#voiceGradient)"/>
+                <defs>
+                  <linearGradient id="voiceGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#f05149" />
+                    <stop offset="100%" stopColor="#58b89c" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    function NewChatPage() {
+      const [chatId, setChatId] = useState(null);
+      const [viewMode, setViewMode] = useState('voice');
+      const [pendingMessage, setPendingMessage] = useState(null);
+      const [chatPlaceholder, setChatPlaceholder] = useState('Message');
+      const [selectedLanguage, setSelectedLanguage] = useState('en');
+
+      useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('chat_id');
+        const language = urlParams.get('language') || 'en';
+
+        if (!id) {
+          window.location.href = '/';
+          return;
+        }
+
+        setChatId(id);
+        setSelectedLanguage(language);
+      }, []);
+
+      const handleBack = () => {
+        if (viewMode === 'voice') {
+          window.location.href = '/';
+        } else if (viewMode === 'chat') {
+          setViewMode('voice');
+        } else {
+          window.location.href = '/';
+        }
+      };
+
+      const handleChatMode = () => {
+        setChatPlaceholder('Message');
+        setViewMode('chat');
+      };
+
+      const handleSendTranscribedText = (text) => {
+        setPendingMessage(text);
+        setViewMode('chat');
+      };
+
+      const handleVoiceMode = () => {
+        setViewMode('voice');
+      };
+
+      const handleQuestionClick = (question) => {
+        setChatPlaceholder(question);
+        setViewMode('chat');
+      };
+
+      const questions = [
+        "What would you like to tell scientists working on robotics?",
+        "Are there areas where you feel robots should not be used?",
+        "What do you hope robots will be able to do in the future?",
+        "How should robotics serve society?",
+        "What worries you about robotics?"
+      ];
+
+      if (!chatId) {
+        return null;
+      }
+
+      return (
+        <div className={`new-chat-container ${viewMode === 'chat' || viewMode === 'voice' ? 'chat-mode' : ''}`}>
+          {viewMode === 'chat' ? (
+            <>
+              {/* Navigation Bar для чата */}
+              <div className="nav-bar">
+                <button className="back-button" onClick={handleBack}>
+                  <svg className="back-button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h1 className="nav-title">COSMO science forum</h1>
+              </div>
+              <ChatInterface chatId={chatId} onVoiceMode={handleVoiceMode} pendingMessage={pendingMessage} onMessageSent={() => setPendingMessage(null)} initialPlaceholder={chatPlaceholder} language={selectedLanguage} />
+            </>
+          ) : viewMode === 'voice' ? (
+            <>
+              {/* Navigation Bar для голосового режима */}
+              <div className="nav-bar">
+                <button className="back-button" onClick={handleBack}>
+                  <svg className="back-button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h1 className="nav-title">COSMO science forum</h1>
+              </div>
+              <VoiceInterface chatId={chatId} onBack={handleBack} onChatMode={handleChatMode} onSendTranscribedText={handleSendTranscribedText} initialLanguage={selectedLanguage} />
+            </>
+          ) : (
+            <>
+              {/* Navigation Bar */}
+              <div className="nav-bar">
+                <button className="back-button" onClick={handleBack}>
+                  <svg className="back-button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h1 className="nav-title">COSMO science forum</h1>
+              </div>
+
+              <div className="new-chat-content">
+                {/* Mode Selection Buttons */}
+                <div className="mode-selection">
+                  <button className="mode-button" onClick={handleChatMode}>
+                    <div className="mode-button-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M12 18v-6"></path>
+                        <path d="M9 15l3-3 3 3"></path>
+                      </svg>
+                    </div>
+                    <div className="mode-button-text">
+                      Chat with<br />COSMO chatbot
+                    </div>
+                  </button>
+                  <button className="mode-button" onClick={handleVoiceMode}>
+                    <div className="mode-button-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                      </svg>
+                    </div>
+                    <div className="mode-button-text">
+                      Talk with<br />COSMO chatbot
+                    </div>
+                  </button>
+                </div>
+
+                {/* Your Opinion Section */}
+                <div className="opinion-section">
+                  <div className="opinion-header">
+                    <h2 className="opinion-title">Your opinion</h2>
+                  </div>
+                  <div className="questions-list">
+                    {questions.map((question, index) => (
+                      <button
+                        key={index}
+                        className="question-button"
+                        onClick={() => handleQuestionClick(question)}
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<NewChatPage />);
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+Project name: Radio waves and materials
+
+How do radio waves behave?
+Which materials influence them? Radio waves enable a wide range of wireless digital 
+applications. These include smartphones, smart homes, and autonomous vehicles. 
+Radio waves always emit from an antenna. Antennas can emit in different ways: for example, 
+directionally, that is, in a specific direction, or spherically in all directions. 
+Different materials affect radio waves. Some allow radio waves to pass through, while others 
+weaken or block them completely. Certain surfaces can also reflect radio waves, similar to how 
+a mirror reflects light. Therefore, an understanding of environmental factors is important for 
+research into radio communication.
+
+What problem do radio waves solve?
+Radio waves enable wireless communication between technical devices. They make these 
+devices mobile and flexible in use. They are the basis of modern communication and connect 
+people worldwide.
+
+What you can discover here:
+ Move the transmitter antenna while holding down the activation button. This will allow you to 
+see how radio waves spread through the air. Observe how the receiver antennas change color 
+depending on the radio waves they receive. 
+Experiment with different materials between the transmitter and receiver antennas. This will 
+allow you to see how materials influence the path of radio waves. 
+Pick up a reflective surface. This will help you understand how radio waves can overcome an 
+obstacle on their way to the receiver antenna by finding new paths  via detours. 

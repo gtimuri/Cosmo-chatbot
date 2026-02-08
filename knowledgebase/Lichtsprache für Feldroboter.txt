@@ -1,0 +1,41 @@
+Projektname: Lichtsprache für Feldroboter
+
+Welches Problem soll diese Innovation lösen?
+Immer mehr Roboter unterstützen die Arbeit in der Landwirtschaft. Sie steuern selbstständig 
+über Felder und treffen dabei auch gelegentlich auf Arbeits kräfte oder Menschen, die spazieren 
+gehen. Diese Personen müssen das Verhalten des Feldroboters einschätzen können, um sich 
+auf dem Feld sicher zu fühlen. Eindeutige Lichtsignale können dabei helfen.
+
+Welche Veränderungen bringt diese Innovation mit sich?
+Feldroboter sollen auf verständliche Art und Weise zeigen, was sie gerade tun und was sie als 
+Nächstes vorhaben. So können die Menschen sie quasi „verstehen“ und Vertrauen aufbauen. 
+Forschende entwickeln dafür eine neue Lichtsprache. Die Feldroboter bekommen gut sichtbare 
+LEDs. Diese zeigen, ob der Roboter zum Beispiel fährt, anhält oder gleich abbiegt. Das hilft, 
+Gefahren zu vermeiden, und es stärkt das Vertrauen in die Technik.
+
+Wer wird von dieser Innovation profitieren?
+ • Fachleute, die mit Robotern auf dem Feld arbeiten. 
+• Menschen, die in der Nähe von Feldern spazieren gehen. 
+• Firmen, die Feldroboter für die Land wirtschaft bauen und möglicherweise später auch andere 
+Robotertypen entwickeln.
+
+Welche Technologie steckt dahinter, und wie funktioniert sie?
+Die Forschenden entwickeln ein neues Lichtsystem. Es besteht aus vielen kleinen LED-
+Leuchten. Jede LED kann einzeln gesteuert werden. Die LEDs leuchten in verschiedenen 
+Farben, Helligkeiten oder Bewegungen. Sie werden als Lichtstreifen am Feldroboter platziert. So 
+kann der Roboter mit Licht zeigen, was er gerade tut oder gleich tun wird.
+
+Herausforderungen 
+• Die Lichtsprache muss eindeutig sein, damit alle sie gleich verstehen.
+ • Die Bedeutung der Lichtsignale muss überall gleich sein. Dafür braucht es eine einheitliche 
+Norm. 
+• Die Menschen müssen den autono men Feldrobotern vertrauen.
+
+Wann wird diese Innovation verfügbar sein?
+Etwas 2030 bis 2038
+
+Wer forscht daran?
+Der Lehrstuhl für Technisches Design (TD) an der TU Dresden.
+
+Was sehen wir?
+Ein Modell eines Feldroboters, der mit LEDs ausgestattet ist, um mit Menschen zu kommunizieren.

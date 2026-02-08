@@ -1,0 +1,19 @@
+Projektname: Künstliche Bewegungen – Die Körpersprache der Roboter
+
+Gibt es eine Roboter-Gestik? 
+Roboter bewegen sich – manchmal rein zweckmäßig, manchmal so, dass es an menschliche 
+Bewegungen erinnert. Doch wie werden diese Bewegungen erzeugt und wie nehmen wir sie 
+wahr?
+
+Die Aufgabe der Studierenden an der Fakultät Design der Hochschule für Technik und 
+Wirtschaft Dresden:
+ Studierende entwickeln neue Formen der Roboter-Gestik. Sie entwerfen Bewegungsabläufe, 
+die nicht direkt vom Menschen oder Tier abgeschaut sind, und testen, ob diese trotzdem 
+verständlich wirken. Dafür arbeiten sie interdisziplinär: Sie skizzieren Ideen, bauen Modelle, 
+programmieren Bewegungen und nutzen 3D-Technik, Mechanik und Sensorik. Ziel ist es 
+herauszufinden, wie Roboter sich so bewegen können, dass wir ihre Gesten intuitiv deuten – 
+auch wenn sie unseren Gesten nicht ähneln.
+
+Das können Sie hier entdecken: 
+Geben Sie dem Roboter eine Aufgabe – er führt sie aus. Danach können Sie bewerten, wie seine 
+Bewegungen auf Sie wirken.

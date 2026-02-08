@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>COSMO Science - Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+      const { useState, useRef, useEffect } = React;
+
+      // CustomButton Component (Slider)
+      function CustomButton({ onSuccess, onFailure, text, text_unlocked, color, onHealthCheck, onErrorReset, onBeforeHealth, errorTextMic, errorTextServer }) {
+        const sliderRef = useRef(null);
+        const containerRef = useRef(null);
+        const [unlocked, setUnlocked] = useState(false);
+        const [error, setError] = useState(false);
+        const [errorText, setErrorText] = useState("");
+        const isDraggingRef = useRef(false);
+        const sliderLeftRef = useRef(0);
+        const startXRef = useRef(0);
+        const containerWidthRef = useRef(0);
+        const unmountedRef = useRef(false);
+        const isTouchModeRef = useRef(false);
+        const healthCheckDoneRef = useRef(false);
+
+        const updateSliderStyle = () => {
+          if (unmountedRef.current || unlocked || !sliderRef.current) return;
+          sliderRef.current.style.left = sliderLeftRef.current + 50 + "px";
+        };
+
+        useEffect(() => {
+          unmountedRef.current = false; // Сбрасываем флаг при монтировании
+          
+          const updateContainerDimensions = () => {
+            if (containerRef.current) {
+              containerWidthRef.current = containerRef.current.clientWidth - 50;
+            }
+          };
+
+          // Инициализируем размеры
+          updateContainerDimensions();
+          // Также обновляем после небольшой задержки на случай, если контейнер еще не отрендерился
+          const initTimer = setTimeout(() => {
+            updateContainerDimensions();
+          }, 10);
+
+          window.addEventListener('resize', updateContainerDimensions);
+
+          const handleTouchMove = (e) => {
+            if (unmountedRef.current || unlocked || !isDraggingRef.current) return;
+            
+            e.preventDefault(); // Предотвращаем скролл
+            
+            if (!e.touches || e.touches.length === 0) return;
+            
+            const clientX = e.touches[0].clientX;
+            const deltaX = clientX - startXRef.current;
+            
+            sliderLeftRef.current = Math.min(
+              Math.max(0, deltaX),
+              containerWidthRef.current
+            );
+            updateSliderStyle();
+          };
+
+          const handleMouseMove = (e) => {
+            if (unmountedRef.current || unlocked || !isDraggingRef.current) return;
+            
+            const clientX = e.clientX;
+            const deltaX = clientX - startXRef.current;
+            
+            sliderLeftRef.current = Math.min(
+              Math.max(0, deltaX),
+              containerWidthRef.current
+            );
+            updateSliderStyle();
+          };
+
+          const checkHealth = async () => {
+            if (healthCheckDoneRef.current) return;
+            healthCheckDoneRef.current = true;
+            
+            try {
+              const response = await fetch('/health');
+              if (response.ok) {
+                const data = await response.json();
+                if (onHealthCheck) {
+                  onHealthCheck(true);
+                }
+                if (onSuccess) {
+                  onSuccess();
+                }
+                handleSuccess();
+              } else {
+                throw new Error('Health check failed');
+              }
+            } catch (err) {
+              setError(true);
+              setErrorText(errorTextServer != null ? errorTextServer : "Failed to connect to server");
+              if (onHealthCheck) {
+                onHealthCheck(false);
+              }
+              if (onFailure) {
+                onFailure();
+              }
+              // Сбрасываем слайдер в начало
+              sliderLeftRef.current = 0;
+              updateSliderStyle();
+              healthCheckDoneRef.current = false;
+            }
+          };
+
+          const handleStop = () => {
+            if (unmountedRef.current || unlocked) return;
+            
+            if (isDraggingRef.current) {
+              isDraggingRef.current = false;
+              
+              if (sliderLeftRef.current > containerWidthRef.current * 0.9) {
+                sliderLeftRef.current = containerWidthRef.current;
+                updateSliderStyle();
+                (async () => {
+                  if (onBeforeHealth) {
+                    try {
+                      const preOk = await onBeforeHealth();
+                      if (!preOk) {
+                        setError(true);
+                        setErrorText(errorTextMic != null ? errorTextMic : "Microphone required");
+                        sliderLeftRef.current = 0;
+                        updateSliderStyle();
+                        healthCheckDoneRef.current = false;
+                        if (onHealthCheck) onHealthCheck(false);
+                        return;
+                      }
+                    } catch (e) {
+                      setError(true);
+                      setErrorText(errorTextMic != null ? errorTextMic : "Microphone required");
+                      sliderLeftRef.current = 0;
+                      updateSliderStyle();
+                      healthCheckDoneRef.current = false;
+                      if (onHealthCheck) onHealthCheck(false);
+                      return;
+                    }
+                  }
+                  await checkHealth();
+                })();
+              } else {
+                sliderLeftRef.current = 0;
+                if (onFailure) {
+                  onFailure();
+                }
+                updateSliderStyle();
+              }
+            }
+          };
+
+          // Добавляем обработчики для touch и mouse событий
+          document.addEventListener("touchmove", handleTouchMove, { passive: false });
+          document.addEventListener("touchend", handleStop);
+          document.addEventListener("touchcancel", handleStop);
+          document.addEventListener("mousemove", handleMouseMove);
+          document.addEventListener("mouseup", handleStop);
+
+          return () => {
+            clearTimeout(initTimer);
+            unmountedRef.current = true;
+            window.removeEventListener('resize', updateContainerDimensions);
+            document.removeEventListener("touchmove", handleTouchMove);
+            document.removeEventListener("touchend", handleStop);
+            document.removeEventListener("touchcancel", handleStop);
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleStop);
+          };
+          }, [unlocked, onSuccess, onFailure, onHealthCheck, onBeforeHealth, errorTextMic, errorTextServer]);
+
+        const handleSuccess = () => {
+          if (containerRef.current) {
+            containerRef.current.style.width = containerRef.current.clientWidth + "px";
+          }
+          setUnlocked(true);
+        };
+
+        const startDrag = (e) => {
+          if (unmountedRef.current || unlocked) return;
+          
+          // Если была ошибка, сбрасываем её при новом начале перетаскивания
+          if (error) {
+            setError(false);
+            setErrorText("");
+            healthCheckDoneRef.current = false;
+            // Уведомляем родительский компонент о сбросе ошибки
+            if (onErrorReset) {
+              onErrorReset();
+            }
+          }
+          
+          // Определяем тип события
+          const isTouch = e.type === 'touchstart' || (e.touches && e.touches.length > 0);
+          isTouchModeRef.current = isTouch;
+          
+          // Предотвращаем стандартное поведение для touch
+          if (isTouch && e.cancelable) {
+            e.preventDefault();
+          }
+
+          isDraggingRef.current = true;
+          
+          if (isTouch) {
+            if (e.touches && e.touches.length > 0) {
+              startXRef.current = e.touches[0].clientX;
+            }
+          } else {
+            startXRef.current = e.clientX;
+          }
+          
+          sliderLeftRef.current = 0;
+          updateSliderStyle();
+        };
+
+        const getText = () => {
+          if (error) return errorText;
+          return unlocked ? (text_unlocked || "UNLOCKED") : (text || "SLIDE");
+        };
+
+        const sliderColor = error ? "#f05149" : (color || "#4aa085");
+        const containerColor = error ? "#f05149" : "#58b89c";
+
+        return (
+          <div className="ReactSwipeButton">
+            <div
+              className={"rsbContainer " + (unlocked ? "rsbContainerUnlocked" : "")}
+              ref={containerRef}
+              style={{ background: containerColor }}
+            >
+              <div
+                className="rsbcSlider"
+                ref={sliderRef}
+                onMouseDown={startDrag}
+                style={{ background: sliderColor, touchAction: 'none' }}
+                onTouchStart={startDrag}
+              >
+                <span className="rsbcSliderText">{getText()}</span>
+                <span className="rsbcSliderArrow"></span>
+                <span
+                  className="rsbcSliderCircle"
+                  style={{ background: sliderColor }}
+                ></span>
+              </div>
+              <div className="rsbcText">{getText()}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // Массив проектов
+      const PROJECTS = [
+        ["Künstliche Intelligenz (KI) für Mobilfunk", "Artificial intelligence (AI) for cellular networks"],
+        ["Künstliche Bewegungen – Die Körpersprache der Roboter", "Artificial movements – The body language of robots"],
+        ["Berührungsfähigkeit für Roboter", "Tactile capabilities for robots"],
+        ["Biointegriertes elektronisches Implantat", "Biointegrated electronic implant"],
+        ["Die 6. Mobilfunkgeneration „6G\"", "The 6th generation of mobile networks – \"6G\""],
+        ["Energieverbrauch des Mobilfunks", "Energy consumption of mobile communications"],
+        ["Isolation von Hardwarekomponenten", "Isolation of hardware components"],
+        ["Latenz", "Latency"],
+        ["Lichtsprache für Feldroboter", "Light-based communication for field robots"],
+        ["Prototyp eines Assistenzroboters für Gießarbeiten", "Prototype of a robot for plant watering"],
+        ["Starke Materialien für weiche Roboterhände", "Strong materials for soft robotic hands"],
+        ["Weiche Magnet-Roboter", "Soft magnetic robots"],
+        ["Vertrauenswürdige Kommunikationseinheit", "Trusted Communication Unit"],
+        ["Funkwellen und Materialien", "Radio waves and materials"],
+      ];
+
+      // Функция для получения project_id из URL
+      const getProjectIdFromUrl = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = parseInt(urlParams.get('project_id') || '0', 10);
+        return Math.max(0, Math.min(projectId, PROJECTS.length - 1));
+      };
+
+      function OnboardingPage() {
+        const videoRef = useRef(null);
+        const [displayMode, setDisplayMode] = useState('image'); // 'image' или 'video'
+        const [imageSrc, setImageSrc] = useState('/static/img/thanks.png');
+        const [shouldPlay, setShouldPlay] = useState(false);
+        const [chatId, setChatId] = useState(null);
+        const [selectedLanguage, setSelectedLanguage] = useState('en');
+        
+        const isSafari = () => {
+          if (typeof navigator === 'undefined') return false;
+          const ua = navigator.userAgent;
+          return (/Safari/i.test(ua) && !/Chrome/i.test(ua)) || /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        };
+
+        const micAlertTexts = {
+          en: {
+            safariDenied: 'Microphone access was denied or blocked. To enable: open iOS Settings → Safari → Microphone (or tap the aA icon in the address bar → Website Settings → Microphone) and allow access for this site. Then return here and slide again.',
+            otherDenied: 'Microphone access was denied. In your browser, allow microphone for this site (address bar lock or site settings), then slide again.',
+            failed: 'Microphone access failed. Please allow microphone and try again.'
+          },
+          de: {
+            safariDenied: 'Zugriff auf das Mikrofon wurde verweigert oder blockiert. Zum Aktivieren: Einstellungen → Safari → Mikrofon öffnen (oder aA in der Adressleiste → Website-Einstellungen → Mikrofon) und den Zugriff für diese Seite erlauben. Dann hierher zurückkehren und erneut wischen.',
+            otherDenied: 'Zugriff auf das Mikrofon wurde verweigert. Erlauben Sie in Ihrem Browser das Mikrofon für diese Seite (Schloss in der Adressleiste oder Website-Einstellungen), dann wischen Sie erneut.',
+            failed: 'Mikrofonzugriff fehlgeschlagen. Bitte Mikrofon erlauben und erneut versuchen.'
+          },
+          ru: {
+            safariDenied: 'Доступ к микрофону был запрещён. Чтобы включить: откройте Настройки → Safari → Микрофон (или нажмите aA в адресной строке → Настройки сайта → Микрофон) и разрешите доступ для этого сайта. Затем вернитесь сюда и проведите слайдер снова.',
+            otherDenied: 'Доступ к микрофону запрещён. Разрешите микрофон для этого сайта в настройках браузера (замок в адресной строке или настройки сайта), затем проведите слайдер снова.',
+            failed: 'Не удалось получить доступ к микрофону. Разрешите микрофон и попробуйте снова.'
+          }
+        };
+
+        const ensurePermissionsAndUnlock = async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(t => t.stop());
+            if (isSafari()) {
+              const Ctx = window.AudioContext || window.webkitAudioContext;
+              if (Ctx) {
+                const ctx = new Ctx();
+                ctx.resume().then(() => {
+                  try {
+                    const buf = ctx.createBuffer(1, 1, 22050);
+                    const src = ctx.createBufferSource();
+                    src.buffer = buf;
+                    src.connect(ctx.destination);
+                    src.start(0);
+                  } catch (_) {}
+                }).catch(() => {});
+              }
+              const silentWav = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+              const a = new Audio(silentWav);
+              a.volume = 0;
+              a.play().catch(() => {});
+              if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.setItem('cosmoPermissionsOk', '1');
+              }
+            }
+            return true;
+          } catch (e) {
+            console.error('Permissions:', e);
+            const lang = micAlertTexts[selectedLanguage] ? selectedLanguage : 'en';
+            const t = micAlertTexts[lang];
+            let msg;
+            if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+              msg = isSafari() ? t.safariDenied : t.otherDenied;
+            } else {
+              msg = t.failed;
+            }
+            alert(msg);
+            return false;
+          }
+        };
+
+        const onBeforeHealth = async () => {
+          if (!isSafari()) return true;
+          return await ensurePermissionsAndUnlock();
+        };
+        
+        // Переводы описания
+        const descriptionTexts = {
+          en: "Ask questions about the exhibition, explore individual exhibits, and share your views, expectations, and concerns - your input can help shape our future research.",
+          de: "Stellen Sie Fragen zur Ausstellung, erkunden Sie einzelne Exponate und teilen Sie Ihre Ansichten, Erwartungen und Bedenken - Ihr Beitrag kann unsere zukünftige Forschung prägen.",
+          ru: "Задавайте вопросы о выставке, изучайте отдельные экспонаты и делитесь своими взглядами, ожиданиями и опасениями - ваш вклад может помочь сформировать наши будущие исследования."
+        };
+
+        const headerLine1Texts = {
+          en: "Join the conversation with",
+          de: "Nehmen Sie am Gespräch teil mit",
+          ru: "Присоединяйтесь к разговору с"
+        };
+
+        const sliderTexts = {
+          en: { slide: "SLIDE TO START", unlocked: "STARTED", micRequired: "Microphone required", serverFailed: "Failed to connect to server" },
+          de: { slide: "WISCHEN ZUM STARTEN", unlocked: "GESTARTET", micRequired: "Mikrofon erforderlich", serverFailed: "Server nicht erreichbar" },
+          ru: { slide: "ПРОВЕДИТЕ ДЛЯ СТАРТА", unlocked: "ЗАПУЩЕНО", micRequired: "Нужен микрофон", serverFailed: "Сервер недоступен" }
+        };
+
+        // Создаем чат когда shouldPlay становится true
+        useEffect(() => {
+          if (shouldPlay && !chatId) {
+            const projectId = getProjectIdFromUrl();
+            const [german_project_name, english_project_name] = PROJECTS[projectId];
+
+            const createChat = async () => {
+              try {
+                const response = await fetch('/chats', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    german_project_name: german_project_name,
+                    english_project_name: english_project_name
+                  })
+                });
+
+                if (response.ok) {
+                  const data = await response.json();
+                  setChatId(data.chat_id);
+                  console.log('Chat created:', data.chat_id);
+                  if (isSafari()) {
+                    window.location.href = `/chat?chat_id=${data.chat_id}&language=${selectedLanguage}`;
+                  } else {
+                    setDisplayMode('video');
+                  }
+                } else {
+                  throw new Error('Failed to create chat');
+                }
+              } catch (err) {
+                console.error('Error creating chat:', err);
+                // При ошибке показываем изображение ошибки
+                setImageSrc('/static/img/server_unaccessable.png');
+                setDisplayMode('image');
+                setShouldPlay(false);
+                if (videoRef.current) {
+                  videoRef.current.pause();
+                  videoRef.current.currentTime = 0;
+                }
+              }
+            };
+
+            createChat();
+          }
+        }, [shouldPlay, chatId]);
+
+        // Запускаем видео когда чат создан
+        useEffect(() => {
+          if (chatId && shouldPlay && videoRef.current && displayMode === 'video') {
+            const video = videoRef.current;
+            // Ждем, пока видео загрузится
+            const handleCanPlay = () => {
+              video.play().then(() => {
+                console.log('Video started playing');
+              }).catch((err) => {
+                console.error('Error playing video:', err);
+              });
+            };
+            
+            video.addEventListener('canplay', handleCanPlay);
+            
+            // Если видео уже загружено, запускаем сразу
+            if (video.readyState >= 3) {
+              video.play().then(() => {
+                console.log('Video started playing (already loaded)');
+              }).catch((err) => {
+                console.error('Error playing video:', err);
+              });
+            }
+            
+            return () => {
+              video.removeEventListener('canplay', handleCanPlay);
+            };
+          }
+        }, [chatId, shouldPlay, displayMode]);
+
+        const handleHealthCheck = (success) => {
+          if (success) {
+            // Запускаем создание чата (которое затем запустит видео)
+            setShouldPlay(true);
+          } else {
+            // При ошибке показываем изображение ошибки
+            setImageSrc('/static/img/server_unaccessable.png');
+            setDisplayMode('image');
+            setShouldPlay(false);
+          }
+        };
+
+        const handleVideoEnd = () => {
+          // После окончания видео переходим на другую страницу только если есть chatId
+          if (chatId) {
+            window.location.href = `/chat?chat_id=${chatId}&language=${selectedLanguage}`;
+          } else {
+            // Если нет chatId, показываем ошибку
+            setImageSrc('/static/img/server_unaccessable.png');
+            setDisplayMode('image');
+            setShouldPlay(false);
+            if (videoRef.current) {
+              videoRef.current.pause();
+              videoRef.current.currentTime = 0;
+            }
+          }
+        };
+
+        const handleSliderFailure = () => {
+          // Можно добавить логику при неудаче
+          console.log('Slider not completed');
+        };
+
+        const handleErrorReset = () => {
+          // При сбросе ошибки возвращаемся к начальному состоянию с thanks.png
+          setImageSrc('/static/img/thanks.png');
+          setDisplayMode('image');
+          setShouldPlay(false);
+          // Сбрасываем видео в начало
+          if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.pause();
+          }
+        };
+
+        return (
+          <div className="onboarding-container">
+            <div className="onboarding-content">
+              {/* Header Section */}
+              <div className="header-section">
+                <div className="header-line1">{headerLine1Texts[selectedLanguage] ?? headerLine1Texts.en}</div>
+                <div className="header-line2">COSMO science!</div>
+              </div>
+
+              {/* Illustration Section */}
+              <div className="illustration-section">
+                <div className="robot-image-container">
+                  {displayMode === 'video' ? (
+                    <video 
+                      ref={videoRef}
+                      src="/static/video/hello.webm" 
+                      muted 
+                      playsInline
+                      className="robot-video"
+                      onEnded={handleVideoEnd}
+                      preload="auto"
+                    />
+                  ) : (
+                    <img 
+                      src={imageSrc} 
+                      alt="Robot" 
+                      className={imageSrc.includes('server_unaccessable') ? "robot-image robot-image-error" : "robot-image"}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Language Selector */}
+              <div className="language-selector-section" style={{ marginBottom: '5px', display: 'flex', justifyContent: 'center' }}>
+                <select
+                  className="voice-language-select"
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                >
+                  <option value="en">English</option>
+                  <option value="de">Deutsch</option>
+                  <option value="ru">Русский</option>
+                </select>
+              </div>
+
+              {/* Description Section */}
+              <div className="description-section">
+                <p className="description-text">
+                  {descriptionTexts[selectedLanguage]}
+                </p>
+              </div>
+
+              {/* Slider Section */}
+              <div className="slider-section">
+                <CustomButton
+                  onHealthCheck={handleHealthCheck}
+                  onFailure={handleSliderFailure}
+                  onErrorReset={handleErrorReset}
+                  onBeforeHealth={onBeforeHealth}
+                  text={sliderTexts[selectedLanguage]?.slide ?? sliderTexts.en.slide}
+                  text_unlocked={sliderTexts[selectedLanguage]?.unlocked ?? sliderTexts.en.unlocked}
+                  errorTextMic={sliderTexts[selectedLanguage]?.micRequired ?? sliderTexts.en.micRequired}
+                  errorTextServer={sliderTexts[selectedLanguage]?.serverFailed ?? sliderTexts.en.serverFailed}
+                  color="#4aa085"
+                />
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<OnboardingPage />);
+
+    </script>
+  </body>
+</html>

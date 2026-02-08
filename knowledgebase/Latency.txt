@@ -1,0 +1,12 @@
+Project name: Latency
+
+”Latency” or reaction time using the example of robotics
+
+What is “latency”? 
+Latency is the time delay between sending and receiving data. In robotics, it influences how quickly a robot reacts to commands or sensors. Low latency ensures more precise and smoother movements.
+
+Which problem does low latency solve?
+Low latency solves the problem of delayed reactions in robots. It enables fast and precise movements. This is particularly important for autonomous vehicles and for robots in industry and medicine, where every millisecond counts. Delayed reactions can lead to dangerous situations in the interaction between humans and robots.
+
+What can you discover here:	
+You can play airhockey against a robot. The robot receives its commands by radio. Set the radio latency and experi ence how it affects the robot's reaction speed. With high latency (3G), the robot reacts more slowly and plays less accurately, while with low latency (5G), it reacts quickly and precisely.

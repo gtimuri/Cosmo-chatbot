@@ -1,0 +1,35 @@
+Projektname: Weiche Magnet-Roboter
+
+Welches Problem soll diese Innovation lösen? 
+Beispiel 1: Alzheimer
+ Bei Alzheimer werden manchmal feine Elektroden ins Gehirn eingesetzt, um bestimmte 
+Bereiche zu stimulieren. Die Behandlung ist aber aufwendig und für Betroffene oft belastend.
+ Beispiel 2: Künstliche Befruchtung 
+Bei der künstlichen Befruchtung müssen Fachleute einzelne Spermien auswählen. Das braucht 
+viel Übung, denn es werden starre Werkzeuge benutzt, welche die empfindlichen Zellen leicht 
+beschädigen können.
+
+Welche Veränderungen bringt diese Innovation mit sich? 
+Die weichen Magnet-Roboter sind nur wenige Millimeter klein, weich und f lexibel, brauchen 
+keinen Strom und keine Batterie. So können sie auch im Körper eingesetzt werden und verletzen 
+kein Gewebe 
+Beispiel 1: Alzheimer 
+Der Roboter könnte durch eine sehr kleine Öffnung ins Gehirn eingesetzt werden. Er stimuliert 
+das Gehirn über einen Helm. Der Roboter braucht keine Drähte. 
+Beispiel 2: Künstliche Befruchtung 
+Der Roboter kann einzelne Zellen wie Spermatozoen einsammeln, ohne sie zu beschädigen.
+
+Welche Technologie steckt dahinter, und wie funktioniert sie?
+ Der Roboter besteht aus leichtem und weichem Gummi mit magnetischem Material.
+ Der Roboter ist selbst ein Magnet. Er be wegt sich mit Hilfe eines Magnetfelds – ganz ohne 
+Kabel. Zusätzlich befinden sich Sensoren im Roboter. Diese passen die Bewegung des Roboters 
+laufend an.
+
+Herausforderungen
+ • Eine langwierige Zulassung zur Verwendung als Medizinprodukt ist erforderlich. 
+• Der Roboter muss „biokompatibel“, also für den Körper geeignet sein. 
+• Der Roboter muss zuverlässig funkti onieren, auch über längere Zeit. 
+• Die Technik soll wenig Energie ver brauchen, damit sie ohne Batterie auskommt.
+
+Wann wird diese Innovation verfügbar sein?
+Etwas 2035 bis 2040

@@ -1,0 +1,24 @@
+Project name: Isolation of hardware components
+
+What problem does this innovation aim to solve? 
+Robots are made up of multiple hard ware and software components. These components can contain security vulnerabilities. If one of these weakness es is exploited, the entire robot could be put at risk. For example, an attack on the control system of the robotic arm could also disrupt other critical functions like the camera or the drive system. 
+
+What changes does this innovation bring? 
+The innovation ensures that individual components are strictly isolated from one another. For example, if a robot’s arm is attacked, the damage remains confined to that area. Other functions – such as the camera or the drive system – remain protected. 
+
+Who will benefit from this innovation? 
+People who work with robots – for example, in industry, healthcare, or logistics. 
+
+What is the technology behind it and how does it work? 
+New, small hardware components help improve the overall security of the system by isolating individual parts from one another. 
+These components are called TCUs (Trusted Communication Units).
+They allow only the necessary communication between components, blocking all other access attempts.
+
+
+Challenges 
+• The application software must support interaction with the TCU. 
+• TCUs require additional space on the chips that host the hardware components to be isolated. 
+• Manufacturers need to be convinced to integrate the TCUs. When will this innovation be available?
+
+When will this innovation be available?
+Approximately 2035 to 2045

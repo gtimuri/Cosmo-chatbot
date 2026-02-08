@@ -1,0 +1,15 @@
+--index-url https://download.pytorch.org/whl/cu124
+torch
+torchvision
+--index-url https://pypi.org/simple
+langchain-text-splitters==1.1.0
+python-dotenv==1.2.1
+langchain-chroma==1.1.0
+langchain-ollama==1.0.1
+langchain-openai==1.1.7
+langchain==1.2.0
+fastapi[standard]==0.125.0
+uvicorn>=0.32.0
+pydantic>=2.0.0
+openai-whisper
+httpx

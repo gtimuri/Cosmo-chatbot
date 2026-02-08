@@ -1,0 +1,41 @@
+Project name: Prototype of a robot for plant watering
+
+What problem does this innovation aim to solve?
+The plants in Pillnitz Palace Park are increasingly suffering from the heat and drought. For the
+gardeners, this means considerably more work (approx. 30%) as they need to water more.
+
+What changes does this innovation bring?
+• The assistant robot helps with watering. It mainly performs physically demanding, repetitive
+tasks that do not require specialist knowledge.
+• It currently saves the gardening specialists 20% of their time.
+• It transports the water to the plants. The gardeners no longer need to pull heavy water hoses to
+the plants. However, they check the plants’ water requirements and instruct the robot where to
+go.
+• In the future, the robot could take over the watering.
+
+Who will benefit from this innovation?
+This innovation will make work easier for the staff in Pillnitz Park. Guests can continue to enjoy a
+well-groomed park.
+
+What is the technology behind it and how does it work?
+The robot uses a satellite system (GPS) to navigate through the park. A light radar checks for
+obstacles up to 10 m away. A laser scanner detects people and objects within a 50-cm radius
+and switches the robot off if necessary. The robot fills up with water on its own and receives
+commands from the gardening staff using a special remote control.
+
+Challenges
+• Development teams must build safety systems for use in public spaces and in difficult
+weather and ground conditions.
+• Technical and development experts should respond to the concerns of the professionals and
+adapt the robot accordingly.
+• Visitors to the park must trust and accept the robot. • The aim is to turn the prototype into a
+marketable product.
+
+When will this innovation be available?
+Approximately 2030 to 2040
+
+Who is researching this?
+The Barkhausen Institut (BI) in collaboration with Technical Design (TD).
+
+What do we see?
+A prototype of a robot designed to assist with watering tasks in the park of Schloss Pillnitz.

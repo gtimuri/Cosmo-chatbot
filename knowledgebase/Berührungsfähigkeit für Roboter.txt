@@ -1,0 +1,33 @@
+Projektname: Berührungsfähigkeit für Roboter
+
+Welches Problem soll diese Innovation lösen?
+
+Roboter haben (noch) nicht das Fein gefühl, das ein Mensch mit seinen Händen hat. Sie können im Moment nur zugreifen. Deshalb können sie noch keine Aufgaben übernehmen, die Nähe 
+erfordern – zum Beispiel in der Pflege. Roboter mit Berührungsfähigkeit sollen künftig Vertrauen herstellen und Nähe schaffen können.
+
+Welche Veränderungen bringt diese Innovation mit sich?
+Roboter sind nicht mehr nur funktional. Sie werden zu echten Interaktions partnern, die 
+Vertrauen bei Menschen wecken können.
+
+Welche Menschen werden von dieser Innovation profitieren?
+ Vor allem Menschen in der Pflege und Medizin. Roboter können ältere und pflegebedürftige 
+Menschen zu Hause unterstützen und Pflegekräfte entlasten.
+
+Welche Technologie steckt dahinter, und wie funktioniert sie?
+ Forschende der Neuro– und Ingenieur wissenschaften untersuchen, wie Berührung Vertrauen 
+schafft und wie Roboter sie menschenähnlich ausführen können. Hierfür entwickeln sie kleine, feinfühlige Sensoren und künstliche Haut.
+Die neuartige Robotertechnologie soll auch Mimik, Körpersprache und Vital werte wie 
+Herzschlag oder Temperatur interpretieren können. So sollen Roboter in Zukunft den Sinn einer Berührung noch besser verstehen.
+
+Herausforderungen 
+• Entwicklung feinfühliger Sensoren: Roboter müssen Sensoren haben, die Berührungen genau 
+wahrnehmen können, ähnlich wie menschliche Haut. Diese Sensoren dürfen nicht größer als 
+Finger sein. 
+• Verständnis von Berührung: Roboter müssen lernen, Berührungen richtig zu interpretieren, um 
+sinnvolle Inter aktionen zu ermöglichen. 
+• Vertrauen aufbauen: Roboter müssen durch ihre Berührungen Vertrauen aufbauen, was eine 
+der größten Herausforderungen in der Mensch Roboter-Interaktion ist.
+
+Wann wird diese Innovation verfügbar sein?
+Etwas 2040 bis 2045
+

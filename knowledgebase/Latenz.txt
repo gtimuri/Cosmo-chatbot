@@ -1,0 +1,12 @@
+Projektname: Latenz
+
+Die „Latenz“ oder Reaktionszeit am Beispiel der Robotik
+
+Was ist „Latenz“?
+Latenz ist die Zeitverzögerung zwischen dem Senden und Empfangen von Daten. In der Robotik beeinflusst sie, wie schnell ein Roboter auf Befehle oder Sensoren reagiert. Geringe Latenz sorgt für präzisere und flüssigere Bewegungen.
+
+Welches Problem löst eine niedrige Latenz?
+Eine niedrige Latenz löst das Problem verzögerter Reaktionen bei Robotern. Sie ermöglicht schnelle und präzise Bewegungen. Das ist besonders für autonome Fahrzeuge sowie für Roboter in der Industrie und der Medizin wichtig, denn hier zählt jede Millisekunde. Verzögerte Reaktionen können in der Interaktion zwischen Mensch und Roboter zu gefährlichen Situationen führen.
+
+Das können Sie hier entdecken: 
+Sie können Airhockey gegen einen Roboter spielen. Der Roboter erhält seine Befehle per Funk. Stellen Sie die FunkLatenz ein und erleben Sie, wie sie die Reaktionsgeschwindigkeit des Roboters beeinflusst. Mit hoher Latenz (3G) reagiert der Roboter langsamer und spielt ungenauer, mit niedriger Latenz (5G) reagiert er schnell und präzise.

@@ -1,0 +1,35 @@
+Project name: Biointegrated eletronic implant
+
+What problem does this innovation aim to solve?
+ Today, electronic implants help to alleviate symptoms in some neuro degenerative diseases 
+(diseases that damage neurons in the brain and the peripheral nervous system) by stimulating 
+the brain. But these implants are not fully integrated with the body’s cells and tissues. Over 
+time, the body forms a protective layer around the implant. This makes it harder for the implant 
+to deliver the therapeutic effect of brain stimulation. As a result, the electrical stimulation dose 
+often needs to be increased – which may lead to more side effects and faster battery drain.
+
+What changes does this innovation bring? 
+New organic materials like hydrogels with built-in semiconductors can improve how well 
+implants integrate with tissue of the body. These new materials are soft, flexible and hydrated, 
+just like natural tissue. Because of this, researchers hope that the body will no longer build a 
+barrier around the implant.
+
+Who will benefit from this innovation? 
+• People with brain injuries or diseases that damage the nervous system, such as Parkinson’s 
+disease.
+
+What is the technology behind it and how does it work? 
+These novel implants are electronic devices made with organic materials. They help the brain 
+when it is not working properly. If brain activity is too low, for example, it is specifically increased 
+by the implant. This is called neuromodulation and allows for lost functions to be restored.
+ These devices are called cyborganic neuroprosthetics. They work similar to a prosthesis for the 
+body. Although they do not cure the disease, they help to replace the lost brain functions.
+
+Challenges 
+• Proving that the new materials are safe, stable, and work well in the body. 
+• Getting official approval can take a long time due to legal medical device regulations. 
+• Finding companies that invest in production and distribution. 
+• The technology is still expensive – cost affects access for everyone who needs it.
+
+ When will this innovation be available?
+Approximately 2030 to 2040

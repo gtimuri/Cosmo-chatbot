@@ -1,0 +1,9 @@
+*.iml
+chromadb/
+ollama/
+.env
+.venv/
+.idea/
+chat_history.db
+*.onnx
+*.onnx.json

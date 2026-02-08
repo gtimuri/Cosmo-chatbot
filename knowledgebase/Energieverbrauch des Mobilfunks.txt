@@ -1,0 +1,20 @@
+Projektname: Energieverbrauch des Mobilfunks
+
+Was genau ist das Problem? 
+Menschen nutzen immer mehr mobile Anwendungen – zum Beispiel für Online-Shopping, 
+Musik-Streaming oder Videokonferenzen. Doch nicht nur Smartphones senden und empfangen 
+Daten. Auch Autos, Sensoren und viele andere Geräte greifen auf das mobile Internet zu. 
+Dadurch steigt die Datenmenge rasant. 
+Mobilfunkmasten, Router und andere Geräte übertragen diese Daten. Sie brauchen Energie – 
+sowohl bei der Herstellung als auch im Betrieb. Je mehr Daten fließen, desto höher wird der 
+Energieverbrauch. 
+
+Was ist die Aufgabe der Forschung
+Mobiles Internet soll möglich sein, ohne die Umwelt stärker zu belasten.
+ Jede neue Mobilfunkgeneration kann mehr Daten versenden und braucht deshalb mehr 
+Energie. Forschende suchen nach Wegen, um den Strom verbrauch von 6G deutlich zu senken. 
+Ihr Ziel: Mehr Daten übertragen, aber weniger Energie verbrauchen.
+
+ Das können Sie hier entdecken: 
+Testen Sie Ihr Wissen im Quiz zum Ener gieverbrauch des Internets. Finden Sie heraus, warum 
+das Internet Energie verbraucht und der steigende Daten verkehr ein Problem darstellt.

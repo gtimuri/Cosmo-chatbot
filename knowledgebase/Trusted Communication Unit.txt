@@ -1,0 +1,30 @@
+Project name: Trusted Communication Unit
+
+What problem does this innovation aim to solve? 
+Networked security cameras provide added value in terms of protection and convenience. 
+Therefore, they send data to other applications in a surveillance system. However, these 
+applications can sometimes have vulnerabilities. An attacker could steal the camera images 
+and thus violate privacy.
+
+What changes does this innovation bring? 
+Special security components ensure that the camera only exchanges data with trustworthy 
+applications. They separate the camera from any insecure parts of the system and protect the 
+camera from potential cyberattacks.
+
+Who will benefit from this innovation? 
+All people living in a digitalized society. 
+
+What is the technology behind it and how does it work? 
+Security is improved by the new “Trusted Communication Unit” (TCU). 
+Each functional unit on a chip has its own TCU. This works like a guard. The TCUs separate the 
+functional units from each other and protect them from unauthorized access. A main system on 
+the chip decides which TCUs are allowed to communicate with each other. This increases 
+security and ensures that an attacker cannot simply access a function al unit.
+
+Challenges 
+• The application software must support interaction with the TCU. 
+• TCUs require additional space on the chips that host the hardware components to be isolated. 
+• Manufacturers need to be convinced to integrate the TCUs.
+
+When will this innovation be available?
+Approximately 2035 to 2045

@@ -1,0 +1,17 @@
+Project name: Artificial movements – The body language of robots
+
+Is there such a thing as robot gestures? 
+Robots move – sometimes purely functionally, sometimes in ways that resemble human 
+movements. But how are these movements created, and how do we perceive them? 
+
+The students’ task at the Faculty of Design of Dresden University of Applied Sciences: 
+Students develop new forms of robotic gestures. They design movement patterns that are not 
+directly copied from humans or animals, and test whether these movements still make sense to 
+us. Their work is interdisciplinary: they sketch ideas, build models, program movement 
+sequences, and work with 3D technology, mechanics, and sensors. The goal is to find out how 
+robots can move in ways that allow us to intuitively understand their gestures – even if they do 
+not resemble our own.
+
+What you can discover here: 
+Give the robot a task – and the robot will carry it out. Afterwards, you can evaluate how its 
+movements felt to you

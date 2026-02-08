@@ -1,0 +1,42 @@
+Project name: Light-based communication for field robots
+
+What problem does this innovation aim to solve?
+More and more robots are assisting with agricultural work. They autonomously navigate across 
+fields and will occasionally encounter people out on a walk or farm workers. Those persons 
+need to be able to interpret the field robot’s behaviour in order to feel safe. Clear light signals 
+can help with this.
+
+What changes does this innovation bring? 
+Field robots should be able to clearly show what they are currently doing and what they plan to 
+do next. This allows people to “understand” them and build trust. Researchers are developing a 
+new light-based signaling system for this purpose. The field robots are equipped with highly 
+visible LEDs that indicate, for example, whether the robot is moving, stopping, or about to turn. 
+This helps prevent accidents, and strengthens trust in the technology.
+
+Who will benefit from this innovation? 
+• Experts who work with robots in the field. 
+• People out on a walk near fields.
+ • Companies that build agricultural field robots and may later develop other types of robots as 
+well.
+
+What is the technology behind it and how does it work?  
+The researchers are developing a new lighting system made up of many small LED lights. Each 
+LED can be controlled individually. The LEDs can shine in differ ent colors, brightness levels, or 
+patterns of movement. They are arranged in light strips mounted on the field robot. This allows 
+the robot to use light to indicate what it is currently doing or what it is about to do.
+
+Challenges 
+• The light signals must be clear and easy to understand so that everyone interprets them the 
+same way. 
+• The meaning of the light signals needs to be consistent everywhere. This requires a 
+standardized system. 
+• People need to be able to trust autonomous field robots.
+
+When will this innovation be available?
+Approximately 2030 to 2040
+
+Who is researching this?
+The Chair of Technical Design (TD) at TU Dresden.
+
+What do we see?
+A model of a field robot equipped with LEDs designed to communicate with people.

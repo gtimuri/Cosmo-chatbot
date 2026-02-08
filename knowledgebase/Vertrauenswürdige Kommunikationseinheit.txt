@@ -1,0 +1,33 @@
+Projektname: Vertrauenswürdige Kommunikationseinheit
+
+Welches Problem soll diese Innovation lösen? 
+Vernetzte Sicherheitskameras sollen für einen Mehrwert an Schutz und Komfort sorgen. Dafür 
+senden sie Daten an andere Anwendungen in einem Über wachungssystem. Doch diese Anwen 
+dungen können manchmal Schwach stellen haben. Ein Angreifer könnte die Kamerabilder 
+stehlen und damit die Privatsphäre verletzen.
+
+Welche Veränderungen bringt diese Innovation mit sich? 
+Besondere Sicherheitskomponenten sorgen dafür, dass die Kamera ihre Daten nur mit 
+vertrauenswürdigen Anwendungen austauscht. Sie trennen die Kamera von eventuell 
+unsicheren Teilen des Systems und schützen die Kamera vor potenziellen Cyberangriffen.
+
+Wer wird von dieser Innovation profitieren? 
+Alle Menschen, die in einer digitalisierten Gesellschaft leben.
+
+Welche Technologie steckt dahinter, und wie funktioniert sie? 
+Die Sicherheit wird durch die neuartige „Trusted Communication Unit“ (TCU) verbessert. Auf 
+Deutsch bedeutet das, „Vertrauenswürdige Kommunikations einheit“.
+Jede Funktionseinheit auf einem Chip bekommt eine eigene TCU. Diese funktioniert wie ein 
+Wächter. Die TCUs trennen die Funktionseinheiten voneinander und schützen diese vor 
+unerlaubten Zugriffen. Ein Hauptsystem auf dem Chip entscheidet, welche TCUs miteinander 
+kommunizieren dürfen. Das erhöht die Sicherheit und sorgt dafür, dass ein Angreifer nicht 
+einfach auf eine Funktionseinheit zugreifen kann.
+
+Herausforderungen 
+• Die TCUs benötigen zusätzliche Flä che auf den Chips. 
+• Hersteller müssen davon überzeugt werden, die TCUs zu integrieren und Siliziumfläche zur 
+Verfügung zu stellen. 
+• Die Anwendungssoftware muss die Zusammenarbeit mit der TCU unter stützen.
+
+Wann wird diese Innovation verfügbar sein?
+Etwas 2035 bis 2045

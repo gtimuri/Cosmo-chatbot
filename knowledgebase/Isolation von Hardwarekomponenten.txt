@@ -1,0 +1,35 @@
+Projektname: Isolation von Hardwarekomponenten
+
+Welches Problem soll diese Innovation lösen?
+Roboter bestehen aus mehreren Hard ware- und Softwarekomponenten. Diese Bestandteile 
+können Sicherheits lücken enthalten. Wird eine dieser Schwachstellen ausgenutzt, kann der 
+gesamte Roboter in Gefahr geraten. So könnte ein Angriff auf die Steuerung des Roboterarms 
+auch andere wichtige Funktionen wie Kamera oder Antrieb stören.
+
+Welche Veränderungen bringt diese Innovation mit sich?                                        
+Die Innovation sorgt dafür, dass die einzelnen Komponenten strikt vonein ander getrennt sind. 
+Wird zum Beispiel der Arm eines Roboters angegriffen, bleibt der Schaden auf diesen Bereich 
+beschränkt. Andere Funktionen – etwa die Kamera oder der Antrieb – bleiben weiterhin 
+geschützt.
+
+Wer wird von dieser Innovation profitieren? 
+Menschen, die mit Robotern arbeiten – zum Beispiel in der Industrie, im Gesund heitswesen 
+oder in der Logistik.
+
+und wie funktioniert sie? 
+Neue, kleine Hardwarekomponenten sorgen für mehr Sicherheit im gesam ten System, indem 
+sie andere Bestand teile voneinander isolieren. 
+Diese Komponenten heißen „TCU“ (Trusted Communication Unit, auf Deutsch: 
+Vertrauenswürdige Kommunikationseinheit).
+Sie lassen nur die notwendige Kommu nikation zwischen Komponenten zu. Alle sonstigen 
+Zugriffsversuche werden blockiert
+
+Herausforderungen 
+• Die Anwendungssoftware muss die Zusammenarbeit mit der TCU unter stützen. 
+• Die TCUs benötigen zusätzliche Fläche auf den Chips, auf denen sich die zu isolierenden 
+Hardwarekomponenten befinden. 
+• Die Hersteller müssen davon über zeugt werden, die TCUs zu integrie ren.
+
+Wann wird diese Innovation verfügbar sein?
+Etwa 2035 bis 2045
+
