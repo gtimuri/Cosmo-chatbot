@@ -1,4 +1,6 @@
-# ChatBot usage guide
+# ChatBot usage
+Study project: a simple chatbot with a web interface that works with a local knowledge base.  
+The project was implemented within the framework of university assignments.
 
 #### 1. Create pip environment
 
@@ -6,6 +8,14 @@
 python -m venv .venv
 source ./.venv/Scripts/activate[.bat]
 ```
+
+# Windows
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# Mac/Linux
+python -m venv .venv
+source .venv/bin/activate
 
 #### 2. Install dependencies
 
@@ -55,3 +65,9 @@ python api.py
 ```
 
 Service will be available on `http://localhost:8080` by default
+
+## Screenshots
+
+| Bot Asking | Bot Answering |
+|:---:|:---:|
+| <img src="frontend/img/asking.png" width="400"> | <img src="frontend/img/answering.png" width="400"> |
